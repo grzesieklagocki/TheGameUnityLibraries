@@ -22,6 +22,8 @@ namespace HexGameBoard.Tests
 
             for (int i = 0; i < count / -1; i++)
                 Assert.AreEqual(true, q[i] >= q[2*i + 1] && q[i] >= q[2 * i + 2]);
+
+
         }
     }
 }
