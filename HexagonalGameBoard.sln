@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27004.2006
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PathFinding", "PathFinding\PathFinding.csproj", "{321DE32F-07D4-443C-8DCA-6C3E988D2FDD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HexagonalGameBoard", "PathFinding\HexagonalGameBoard.csproj", "{321DE32F-07D4-443C-8DCA-6C3E988D2FDD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PathFindingTests", "PathFindingTests\PathFindingTests.csproj", "{846F1BA7-E406-4B60-9DE9-FA33F2BB8B9B}"
 EndProject

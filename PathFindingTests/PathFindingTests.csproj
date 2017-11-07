@@ -63,9 +63,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PathFinding\PathFinding.csproj">
+    <ProjectReference Include="..\PathFinding\HexagonalGameBoard.csproj">
       <Project>{321DE32F-07D4-443C-8DCA-6C3E988D2FDD}</Project>
-      <Name>PathFinding</Name>
+      <Name>HexagonalGameBoard</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>
