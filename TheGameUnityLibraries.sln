@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2006
+VisualStudioVersion = 15.0.27130.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HexagonalGameBoard", "PathFinding\HexagonalGameBoard.csproj", "{321DE32F-07D4-443C-8DCA-6C3E988D2FDD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PathFindingTests", "PathFindingTests\PathFindingTests.csproj", "{846F1BA7-E406-4B60-9DE9-FA33F2BB8B9B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Calculations", "Calculations\Calculations.csproj", "{DB1CF4CC-E3D4-4E40-AAEE-4169800AEF29}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HexagonalGameBoardTests", "HexagonalGameBoardTests\HexagonalGameBoardTests.csproj", "{8DA7A32F-5764-4FB9-9897-C59D9C8488E1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{DB1CF4CC-E3D4-4E40-AAEE-4169800AEF29}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DB1CF4CC-E3D4-4E40-AAEE-4169800AEF29}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DB1CF4CC-E3D4-4E40-AAEE-4169800AEF29}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8DA7A32F-5764-4FB9-9897-C59D9C8488E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8DA7A32F-5764-4FB9-9897-C59D9C8488E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8DA7A32F-5764-4FB9-9897-C59D9C8488E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8DA7A32F-5764-4FB9-9897-C59D9C8488E1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

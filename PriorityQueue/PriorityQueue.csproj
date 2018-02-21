@@ -4,14 +4,13 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{321DE32F-07D4-443C-8DCA-6C3E988D2FDD}</ProjectGuid>
+    <ProjectGuid>{BF8F52EB-8ABF-4BB0-A925-F94116F88E75}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>HexGameBoard</RootNamespace>
-    <AssemblyName>HexGameBoard</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <RootNamespace>PriorityQueue</RootNamespace>
+    <AssemblyName>PriorityQueue</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -39,19 +38,9 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="UnityEngine">
-      <HintPath>C:\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Field.cs" />
-    <Compile Include="HexHelper.cs" />
-    <Compile Include="PathFinder.cs" />
-    <Compile Include="PriorityQueue.cs" />
-    <Compile Include="PriorityQueue\MaxComparer .cs" />
-    <Compile Include="PriorityQueue\MinComparer.cs" />
-    <Compile Include="PriorityQueue\PriorityQueue.cs" />
-    <Compile Include="PriorityQueue\PriorityQueue2.cs" />
+    <Compile Include="PriorityQueue2.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

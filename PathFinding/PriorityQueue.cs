@@ -2,19 +2,17 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace HexGameBoard
 {
     public class PriorityQueue<T> where T : IComparable<T>
     {
-        public int Count { get { return count; } }
-        public int Capacity { get { return capacity; } }
+        public int Count { get { return list.Count; } }
+        public int Capacity { get { return list.Capacity; } }
 
-        private T[] queue;
-        private int firstItemIndex;
-        private int count;
-        private int capacity;
+        private List<T> list;
 
 
         #region Constructors
@@ -22,34 +20,43 @@ namespace HexGameBoard
         /// <summary>
         ///     Domyślny konstruktor
         /// </summary>
-        public PriorityQueue() : this(1)
+        public PriorityQueue() : this(4)
         {
 
         }
 
         /// <summary>
-        ///     Konstruktor z inicjacją pojemności
+        ///     Konstruktor z inicjalizacją pojemności
         /// </summary>
-        /// <param name="capacity"></param>
+        /// <param name="capacity">Pojemność początkowa kolejki</param>
         public PriorityQueue(int capacity)
         {
-            queue = new T[this.capacity = capacity];
+            list = new List<T>(capacity);
+        }
+
+        /// <summary>
+        ///     Konstruktor z inicjalizacją elementów
+        /// </summary>
+        /// <param name="collection">Elementy, które zostaną dodane do kolejki</param>
+        public PriorityQueue(IEnumerable<T> collection) : this(collection.Count())
+        {
+            if (collection == null)
+                throw new ArgumentNullException();
+
+            foreach (var item in collection)
+                Insert(item);
         }
 
         #endregion
 
 
         /// <summary>
-        ///     Dodaje element do kolejki prioritetowej
+        ///     Dodaje element do kolejki priorytetowej
         /// </summary>
+        /// <param name="item">Element do dodania</param>
         public void Enqueue(T item)
         {
-            if (count == capacity)
-                Array.Resize(ref queue, capacity *= 2);
-
             Insert(item);
-
-            count++;
         }
 
         /// <summary>
@@ -58,15 +65,11 @@ namespace HexGameBoard
         /// <returns></returns>
         public T Dequeue()
         {
-            if (count == 0)
-                throw new Exception("Empty");
+            if (Count == 0)
+                throw new Exception("Collection is empty");
 
-            T item = queue[firstItemIndex];
-            count--;
-
-            Swap(firstItemIndex, GetIndex(count));
-
-            firstItemIndex = GetIndex(1);
+            T item = list[0];
+            list.RemoveAt(0);
 
             return item;
         }
@@ -77,52 +80,63 @@ namespace HexGameBoard
         /// <returns></returns>
         public T Peek()
         {
-            return queue[firstItemIndex];
+            return list[0];
         }
 
-        public T this[int index]
+        public bool Contains(T item)
         {
-            get
-            {
-                if (index >= count)
-                    throw new Exception();
-                return queue[GetIndex(index)];
-            }
-
-            set
-            {
-                queue[GetIndex(index)] = value;
-            }
+            return list.Contains(item);
         }
 
-
-        private int GetIndex(int itemIndex)
-        {
-            return ((firstItemIndex + itemIndex) % capacity);
-        }
+              
 
         private void Swap(int x, int y)
         {
-            var temp = queue[x];
-            queue[x] = queue[y];
-            queue[y] = temp;
+            var temp = list[x];
+            list[x] = list[y];
+            list[y] = temp;
         }
 
         private void Insert(T newItem)
         {
-            int i, j;
+            //int i, j;
 
-            i = count;
-            j = (i - 1) / 2;
+            //i = Count;
+            //j = (i - 1) / 2;
 
-            while (i > 0 && queue[GetIndex(j)].CompareTo(newItem) < 0)
-            {
-                queue[GetIndex(i)] = queue[GetIndex(j)];
-                i = j;
-                j = (i - 1) / 2;
-            }
+            //while (i > 0 && list[j].CompareTo(newItem) < 0)
+            //{
+            //    list[i] = list[j];
+            //    i = j;
+            //    j = (i - 1) / 2;
+            //}
 
-            queue[GetIndex(i)] = newItem;
+            //list[i] = newItem;
+
+            //for (int i = 0; i > 0 && ; )
+            //{
+            //    if (n > data[Index / 2])
+            //        Swap(Index, Index / 2);
+            //    else break;
+            //    Index = Index / 2;
+            //}
+        }
+
+        private void Heapify(int index)
+        {
+            var leftChild = GetLeftChildIndex(index);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int GetLeftChildIndex(int parentIndex)
+        {
+            return parentIndex * 2 + 1;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int GetRightChildIndex(int parentIndex)
+        {
+            return parentIndex * 2 + 2;
         }
     }
 }

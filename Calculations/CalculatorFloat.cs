@@ -6,19 +6,11 @@ using System.Threading.Tasks;
 
 namespace Calculations
 {
-    public class CalculatorFloat : CalculatorBase<float>
+    public class CalculatorFloat : CalculatorNumeric<float>
     {
-        protected override ArithmeticFunction[] DefineArithmeticFunctions()
+        protected override float MinAction(float a, float b)
         {
-            ArithmeticFunction[] functions =
-            {
-                new ArithmeticFunction("*", (a, b) => a * b),
-                new ArithmeticFunction("/", (a, b) => a / b),
-                new ArithmeticFunction("+", (a, b) => a + b),
-                new ArithmeticFunction("-", (a, b) => a - b),
-            };
-
-            return functions;
+            throw new NotImplementedException();
         }
 
         protected override float ParseFromString(string argument)

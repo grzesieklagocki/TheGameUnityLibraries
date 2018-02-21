@@ -6,46 +6,88 @@ using System.Threading.Tasks;
 
 namespace Calculations
 {
-    public abstract class CalculatorBase<T>
+    internal abstract partial class CalculatorBase<TVariable, TAlgorithm> where TAlgorithm : IAlgorithm<TVariable>
     {
-        public static Dictionary<string, Func<T>> globalVariables;
+        public static Dictionary<string, Func<TVariable>> globalVariables;
 
-        protected Dictionary<string, Func<T>> localVariables;
+        protected Dictionary<string, Func<TVariable>> localVariables;
 
+        private readonly Function[] functions;
         private readonly ArithmeticFunction[] arithmeticFunctions;
+
+        protected TAlgorithm algorithm;
 
 
         #region Constructors
 
-        internal CalculatorBase() : this(new Dictionary<string, Func<T>>()) { }
+        internal CalculatorBase() : this(new Dictionary<string, Func<TVariable>>()) { }
 
-        internal CalculatorBase(Dictionary<string, Func<T>> localVariables)
+        internal CalculatorBase(Dictionary<string, Func<TVariable>> localVariables)
         {
             this.localVariables = localVariables;
 
+            functions = DefineFunctions();
             arithmeticFunctions = DefineArithmeticFunctions();
         }
 
         static CalculatorBase()
         {
-            globalVariables = new Dictionary<string, Func<T>>();
+            globalVariables = new Dictionary<string, Func<TVariable>>();
         }
 
         #endregion
 
 
+        protected abstract Function[] DefineFunctions();
+
         protected abstract ArithmeticFunction[] DefineArithmeticFunctions();
 
-        protected abstract T ParseFromString(string argument);
+        #region Parse
 
-        protected virtual string ParseToString(T argument)
+        protected abstract TVariable ParseFromString(string argument);
+
+        protected virtual string ParseToString(TVariable argument)
         {
             return argument.ToString();
         }
 
+        private bool TryParseFromString(string argument, out TVariable value)
+        {
+            value = default(TVariable);
+
+            try
+            {
+                value = ParseFromString(argument);
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private bool TryParseToString(TVariable argument, out string value)
+        {
+            value = default(string);
+
+            try
+            {
+                value = ParseToString(argument);
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        #endregion
+
         #region Register / Unregister Local Variables
 
-        public void RegisterLocalVariable(string name, Func<T> predicate)
+        public void RegisterLocalVariable(string name, Func<TVariable> predicate)
         {
             if (localVariables.ContainsKey(name))
                 throw new Exception($"Nie można zarejestrować lokalnej zmiennej. \"{name}\" zostało już wcześniej zarejestrowane");
@@ -57,53 +99,69 @@ namespace Calculations
         {
             if (!localVariables.Remove(name))
                 throw new Exception($"Nie można wyrejestrować lokalnej zmiennej. \"{name}\" nie zostało wcześniej zarejestrowane");
-                
+
         }
 
         #endregion
 
-        public T Calculate(string formula)
+
+        public TAlgorithm CreateAlgorithm(string formula)
         {
-            if (formula == null)
+            var algorithm = default(TAlgorithm);
+
+            //algorithm.AddNextStep()
+
+            return default(TAlgorithm);
+        }
+
+        public TVariable Calculate(TAlgorithm algorithm)
+        {
+            if (algorithm == null)
                 throw new ArgumentNullException();
 
-
-
-            return default(T);
+            return algorithm.Resolve();
         }
+
+        protected abstract string Calculate(string expression, ArithmeticFunction arithmeticFunction);
 
         #region Check Formula
 
-        void CheckFormula(string formula)
-        {
-            string[] braces = { "(", ")" };
+        //void CheckFormula(string formula)
+        //{
+        //    string[] braces = { "(", ")" };
 
-            var variables = formula
-                .Split(arithmeticFunctions.Select(f => f.Operator).ToArray(), StringSplitOptions.RemoveEmptyEntries)
-                .Concat(braces);
+        //    var variables = formula
+        //        .Split(arithmeticFunctions.Select(f => f.Operator).ToArray(), StringSplitOptions.RemoveEmptyEntries)
+        //        .Concat(braces);
 
-        }
+        //}
 
         #endregion
 
+        protected void ReduceBrackets(ref string expression)
+        {
+            while (expression.Length > 0 && expression[0] == '(' && expression[expression.Length - 1] == ')')
+                expression = expression.Substring(1, expression.Length - 2);
+        }
+
         #region Check Formula Helpers
 
-        private bool CheckVariableNames(string[] names)
+        protected bool CheckVariableNames(string[] names)
         {
             return names.All(n => IsValidVariableName(n));
         }
 
-        private bool IsValidVariableName(string name)
+        protected bool IsValidVariableName(string name)
         {
             return name.All(c => Char.IsLetterOrDigit(c) || c == '_');
         }
 
-        private bool IsOperator(string c)
+        protected bool IsOperator(string c)
         {
             return arithmeticFunctions.Any(f => f.Operator == c);
         }
 
-        private bool IsCharBracket(char c)
+        protected bool IsCharBracket(char c)
         {
             return (c == '(' || c == ')');
         }
@@ -115,12 +173,26 @@ namespace Calculations
         protected class ArithmeticFunction
         {
             public string Operator { get; }
-            public Func<T, T, T> Method { get; }
+            public Func<TVariable, TVariable, TVariable> Method { get; }
 
-            public ArithmeticFunction(string _operator, Func<T, T, T> method)
+            public ArithmeticFunction(string _operator, Func<TVariable, TVariable, TVariable> method)
             {
                 Operator = _operator;
                 Method = method;
+            }
+        }
+
+        protected class Function
+        {
+            internal string Name { get; }
+            internal Func<string[], TVariable> Method { get; }
+            internal int ParametersCount { get; }
+
+            internal Function(string name, Func<string[], TVariable> method, int parametersCount)
+            {
+                Name = name;
+                Method = method;
+                ParametersCount = parametersCount;
             }
         }
 

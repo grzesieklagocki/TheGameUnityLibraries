@@ -8,7 +8,7 @@ using static HexGameBoard.HexHelper;
 
 namespace HexGameBoard
 {
-    public class PathFinder<T>
+    public class PathFinder<TField>
     {
         private Field[][] fields;
         private Vector2Int size;
@@ -18,7 +18,7 @@ namespace HexGameBoard
 
         public PathFinder() { }
 
-        public PathFinder(T[,] gameBoard, Func<T, Vector2Int> positionPredicate)
+        public PathFinder(TField[,] gameBoard, Func<TField, Vector2Int> positionPredicate)
         {
             Initialize(gameBoard, positionPredicate);
         }
@@ -28,7 +28,7 @@ namespace HexGameBoard
 
         #region Initialization
 
-        public void Initialize(T[,] gameBoard, Func<T, Vector2Int> positionPredicate)
+        public void Initialize(TField[,] gameBoard, Func<TField, Vector2Int> positionPredicate)
         {
             size = new Vector2Int(gameBoard.GetLength(0), gameBoard.GetLength(1));
 
@@ -46,7 +46,7 @@ namespace HexGameBoard
                 fields[x] = new Field[size.y];
         }
 
-        private void FillArrayWithFields(T[,] gameBoard, Func<T, Vector2Int> positionPredicate)
+        private void FillArrayWithFields(TField[,] gameBoard, Func<TField, Vector2Int> positionPredicate)
         {
             for (int y = 0; y < size.y; y++)
                 for (int x = 0; x < size.x; x++)
@@ -71,16 +71,16 @@ namespace HexGameBoard
 
         }
 
-#endregion
+        #endregion
 
         #region Has Valid Index
 
         private bool HasValidIndex(Vector2Int index)
         {
-            return index.x >= 0 
-                && index.y >= 0 
-                && index.x < size.x 
-                && index.y < size.y; 
+            return index.x >= 0
+                && index.y >= 0
+                && index.x < size.x
+                && index.y < size.y;
         }
         #endregion
 
