@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Priority_Queue;
 using UnityEngine;
 using static HexGameBoard.HexHelper;
 
@@ -16,8 +17,6 @@ namespace HexGameBoard
 
         #region Contructors
 
-        public PathFinder() { }
-
         public PathFinder(TField[,] gameBoard, Func<TField, Vector2Int> positionPredicate)
         {
             Initialize(gameBoard, positionPredicate);
@@ -25,6 +24,34 @@ namespace HexGameBoard
 
         #endregion
 
+
+        /// <summary>
+        ///     Blokuje/odblokowuje wybrane pole i usuwa/przywraca powiązania z sąsiadami
+        /// </summary>
+        /// <param name="field">Pozycja pola do zablokowania/odblokowania</param>
+        /// <param name="block">true - blokowanie, false - odblokowywanie</param>
+        public void BlockField(Vector2Int field, bool block = true)
+        {
+            var neighbors = fields[field.x][field.y].availableNeighbors;
+
+            fields[field.x][field.y] = block ? null : new Field(field);
+
+            foreach (var neighbor in neighbors)
+                fields[neighbor.x][neighbor.y].availableNeighbors = FindAvailableNeighbors(neighbor.x, neighbor.y);
+        }
+
+        /// <summary>
+        ///     Wyszukuje najkrótszą ścieżkę między dwoma polami
+        /// </summary>
+        /// <param name="start">Pozycja początkowa</param>
+        /// <param name="destination">Pozycja końcowa</param>
+        /// <returns>Kolejka pól z najkrótszą ścieżką</returns>
+        public Queue<Vector2Int> Find(Vector2Int start, Vector2Int destination)
+        {
+            var path = new Queue<Vector2Int>();
+
+            return path;
+        }
 
         #region Initialization
 
@@ -34,7 +61,7 @@ namespace HexGameBoard
 
             InitializeArray();
             FillArrayWithFields(gameBoard, positionPredicate);
-            FindAllNeighbors();
+            FillFieldsWithNeighbors();
 
         }
 
@@ -53,22 +80,26 @@ namespace HexGameBoard
                     fields[x][y] = new Field(positionPredicate.Invoke(gameBoard[x, y]));
         }
 
-        private void FindAllNeighbors()
+        private void FillFieldsWithNeighbors()
         {
             for (int y = 0; y < size.y; y++)
                 for (int x = 0; x < size.x; x++)
-                {
-                    var field = fields[x][y];
+                    fields[x][y].availableNeighbors = FindAvailableNeighbors(x, y);
+        }
 
-                    for (Direction direction = 0; direction <= Direction.upperLeft; direction++)
-                    {
-                        var neighbor = IndexOfNeighbor(field.position, direction);
+        private List<Vector2Int> FindAvailableNeighbors(int x, int y)
+        {
+            var neightbors = new List<Vector2Int>();
 
-                        if (HasValidIndex(neighbor) && FieldAt(neighbor) != null)
-                            field.availableNeighbors.Add(neighbor);
-                    }
-                }
+            for (Direction direction = 0; direction <= Direction.upperLeft; direction++)
+            {
+                var neighbor = IndexOfNeighbor(fields[x][y].position, direction);
 
+                if (HasValidIndex(neighbor) && FieldAt(neighbor) != null)
+                    neightbors.Add(neighbor);
+            }
+
+            return neightbors;
         }
 
         #endregion

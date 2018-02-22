@@ -31,6 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Priority Queue, Version=4.1.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OptimizedPriorityQueue.4.1.1\lib\net45\Priority Queue.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -47,12 +50,10 @@
     <Compile Include="Field.cs" />
     <Compile Include="HexHelper.cs" />
     <Compile Include="PathFinder.cs" />
-    <Compile Include="PriorityQueue.cs" />
-    <Compile Include="PriorityQueue\MaxComparer .cs" />
-    <Compile Include="PriorityQueue\MinComparer.cs" />
-    <Compile Include="PriorityQueue\PriorityQueue.cs" />
-    <Compile Include="PriorityQueue\PriorityQueue2.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

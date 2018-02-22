@@ -84,7 +84,7 @@ namespace HexGameBoard
         /// </summary>
         /// <param name="field">Pole leżace w lewym dolnym rogu okręgu</param>
         /// <param name="layer">Numer warstwy</param>
-        /// <returns></returns>
+        /// <returns>Lista pól</returns>
         private static List<Vector2Int> GetHexRing(Vector2Int field, int layer)
         {
             var fields = new List<Vector2Int>();
