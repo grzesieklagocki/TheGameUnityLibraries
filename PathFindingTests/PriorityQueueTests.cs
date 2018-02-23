@@ -1,11 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using HexGameBoard;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using HexGameBoard.PriorityQueue;
+using Priority_Queue;
 
 namespace HexGameBoard.Tests
 {
@@ -23,17 +18,17 @@ namespace HexGameBoard.Tests
             array = new int[count];
 
             for (int i = 0; i < count; i++)
-                array[i] = random.Next(int.MinValue, int.MaxValue);
+                array[i] = random.Next(0, 5);
         }
 
         [TestMethod()]
         public void EnqueueTest()
         {
-            var queue = new PriorityQueue<int>();
+            var queue = new SimplePriorityQueue<int>();
 
 
             for (int i = 0; i < count; i++)
-                queue.Enqueue(array[i]);
+                queue.Enqueue(array[i], array[i]);
 
             //var previous = queue.Dequeue();
 

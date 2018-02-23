@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="Field.cs" />
     <Compile Include="HexHelper.cs" />
+    <Compile Include="IField.cs" />
     <Compile Include="PathFinder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

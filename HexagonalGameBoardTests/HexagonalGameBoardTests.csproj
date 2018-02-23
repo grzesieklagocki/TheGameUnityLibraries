@@ -60,6 +60,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="HexHelperTests.cs" />
+    <Compile Include="PathFinderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
