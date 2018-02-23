@@ -48,18 +48,21 @@ namespace HexGameBoard
         /// <param name="start">Pozycja początkowa</param>
         /// <param name="destination">Pozycja końcowa</param>
         /// <returns>Kolejka pól z najkrótszą ścieżką</returns>
-        public static Stack<Vector2Int> Find(IField[][] fields, Vector2Int start, Vector2Int destination, int minAvailabilityLevel)
+        public static Stack<Vector2Int> Find(IField[][] fields, Vector2Int start, Vector2Int destination, int minAvailabilityLevel, Action<Vector2Int> action = null)
         {
             var openSet = new SimplePriorityQueue<Field>();
             var closedSet = new List<Field>();
 
             var startField = new Field(start);
+            //startField.h = Heuristics(start, destination);
 
             openSet.Enqueue(startField, 0);
 
             while (openSet.Count > 0)
             {
                 var actualField = openSet.Dequeue();
+
+                //System.Diagnostics.Debug.WriteLine($"\nWybrano {actualField.position}, g={actualField.g}, h={actualField.h}, F={actualField.F}, parent={actualField.parent?.position}\n");
 
                 // znaleziono ścieżkę
                 if (actualField.position == destination)
@@ -72,20 +75,25 @@ namespace HexGameBoard
                     var neighbor = new Field(neighborPosition);
 
                     if (closedSet.Contains(neighbor))
-                        break;
+                    {
+                        //System.Diagnostics.Debug.WriteLine($"Odrzucam {neighbor.position}, g={neighbor.g}, h={neighbor.h}, F={neighbor.F}, parent={neighbor.parent?.position}");
+                        continue;
+                    }
 
                     if (!openSet.Contains(neighbor))
                     {
                         neighbor.parent = actualField;
                         neighbor.g = actualField.g + 1;
-                        neighbor.h = Heuristics(neighbor.position, actualField.position);
+                        neighbor.h = Heuristics(neighbor.position, destination);
 
                         openSet.Enqueue(neighbor, neighbor.F);
+
+                        //System.Diagnostics.Debug.WriteLine($"Rozpatrzony {neighbor.position}, g={neighbor.g}, h={neighbor.h}, F={neighbor.F}, parent={neighbor.parent?.position}");
                     }
                     else
                     {                        
                         var neighborInQueue = openSet.First(f => f.position == neighborPosition); // raczej powolne
-                        var estimatedG = neighbor.g + 1;
+                        var estimatedG = actualField.g + 1;
 
                         if (estimatedG < neighborInQueue.g)
                         {
@@ -93,8 +101,13 @@ namespace HexGameBoard
                             neighborInQueue.g = estimatedG;
 
                             openSet.UpdatePriority(neighborInQueue, neighborInQueue.F);
-                        }
+
+                            //System.Diagnostics.Debug.WriteLine($"Rozpatrzony (updated) {neighborInQueue.position}, g={neighborInQueue.g}, h={neighborInQueue.h}, F={neighborInQueue.F}, parent={neighborInQueue.parent?.position}");
+                        }                   
                     }
+
+                    action?.Invoke(neighborPosition);
+                    
                 }
             }
 
@@ -105,7 +118,11 @@ namespace HexGameBoard
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static float Heuristics(Vector2Int a, Vector2Int b)
         {
-            return Vector2Int.Distance(a, b);
+            //return Vector2Int.Distance(a, b);
+            //return Mathf.Abs(a.x - a.y)
+
+            var distance = GetDistance(a, b);
+            return distance;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -113,11 +130,14 @@ namespace HexGameBoard
         {
             var path = new Stack<Vector2Int>(1);
 
-            path.Push(destination.position);
+            //path.Push(destination.position);
 
-            var field = destination;
+            //var field = destination;
 
-            while ((field = field.parent) != null)
+            //while ((field = field.parent) != null)
+            //    path.Push(field.position);
+
+            for (var field = destination; field != null; field = field.parent)
                 path.Push(field.position);
 
             return path;

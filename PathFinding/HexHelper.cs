@@ -79,6 +79,35 @@ namespace HexGameBoard
             return fields;
         }
 
+        public static Vector3Int AxialToCubeCoordinates(Vector2Int axialCoordinates)
+        {
+            //x = hex.col
+            //z = hex.row - (hex.col - (hex.col & 1)) / 2
+            //y = -x - z
+            //return Cube(x, y, z)
+            var x = axialCoordinates.x;
+            var z = axialCoordinates.y - (axialCoordinates.x - (axialCoordinates.x & 1)) / 2;
+            var y = -x - z;
+
+            return new Vector3Int(x, y, z);
+        }
+
+        public static Vector2Int CubeToAxialCoordinates(Vector3Int cubeCoordinates)
+        {
+
+            return new Vector2Int(cubeCoordinates.x, cubeCoordinates.z + (cubeCoordinates.x - (cubeCoordinates.x & 1)) / 2);
+        }
+
+        public static int GetDistance(Vector2Int a, Vector2Int b)
+        {
+            return GetDistance(AxialToCubeCoordinates(a), AxialToCubeCoordinates(b));
+        }
+
+        public static int GetDistance(Vector3Int a, Vector3Int b)
+        {
+            return Mathf.Max(Math.Abs(a.x - b.x), Math.Abs(a.y - b.y), Math.Abs(a.z - b.z));
+        }
+
         /// <summary>
         /// 
         /// </summary>
