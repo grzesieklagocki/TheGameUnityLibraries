@@ -13,33 +13,36 @@ namespace HexGameBoard.Tests
     public class PathFinderTests
     {
         private IField[][] fields;
-
+        private Vector2Int size = new Vector2Int(100, 100);
 
         [TestInitialize]
         public void Init()
         {
-            fields = new IField[10][];
+            fields = new IField[size.x][];
 
-            for (int i = 0; i < 10; i++)
-                fields[i] = new IField[10];
+            for (int x = 0; x < size.x; x++)
+            {
+                fields[x] = new IField[size.y];
 
-            for (int x = 0; x < 10; x++)
-                for (int y = 0; y < 10; y++)
+                for (int y = 0; y < size.y; y++)
                 {
                     fields[x][y] = new TestField(x, y, 2);
                 }
+            }
+
+            fields[size.x - 1][size.y - 1].AvailabilityLevel = 0;
         }
 
         [TestMethod()]
         public void FindTest()
         {
             var start = new Vector2Int(0, 0);
-            var destination = new Vector2Int(1, 1);
+            var destination = new Vector2Int(size.x - 1, size.y - 1);
 
             var path = PathFinder.Find(fields, start, destination, 1);
-            var calcuated = HexHelper.GetDistance(start, destination);
+            //var calcuated = HexHelper.GetDistance(start, destination);
 
-            Assert.AreEqual(true, actual: path.Count == calcuated);
+            Assert.AreEqual(true, actual: path.Count == /*calcuated + 1*/0);
         }
 
         [TestMethod]

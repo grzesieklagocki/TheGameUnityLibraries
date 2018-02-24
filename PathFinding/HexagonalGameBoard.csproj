@@ -51,6 +51,7 @@
     <Compile Include="HexHelper.cs" />
     <Compile Include="IField.cs" />
     <Compile Include="PathFinder.cs" />
+    <Compile Include="PriorityQueue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

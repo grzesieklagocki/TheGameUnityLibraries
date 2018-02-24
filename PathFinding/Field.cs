@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace HexGameBoard
 {
-    internal class Field : IEquatable<Field>
+    public class Field : FastPriorityQueueNode, IEquatable<Field>
     {
         internal Vector2Int position;
         //internal List<Vector2Int> availableNeighbors;
@@ -21,6 +21,8 @@ namespace HexGameBoard
             }
         }
 
+        internal List<Vector2Int> neighbors;
+
         internal Field parent;
 
         internal Field(Vector2Int position)
@@ -28,6 +30,9 @@ namespace HexGameBoard
             this.position = position;
             //availableNeighbors = new List<Vector2Int>(2);
         }
+
+        internal bool onClosedSet;
+        internal bool onOpenSet;
 
         public bool Equals(Field other)
         {

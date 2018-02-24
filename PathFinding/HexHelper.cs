@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace HexGameBoard
@@ -79,7 +80,8 @@ namespace HexGameBoard
             return fields;
         }
 
-        public static Vector3Int AxialToCubeCoordinates(Vector2Int axialCoordinates)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Vector3Int AxialToCubeCoordinates(Vector2Int axialCoordinates)
         {
             //x = hex.col
             //z = hex.row - (hex.col - (hex.col & 1)) / 2
@@ -92,18 +94,21 @@ namespace HexGameBoard
             return new Vector3Int(x, y, z);
         }
 
-        public static Vector2Int CubeToAxialCoordinates(Vector3Int cubeCoordinates)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Vector2Int CubeToAxialCoordinates(Vector3Int cubeCoordinates)
         {
 
             return new Vector2Int(cubeCoordinates.x, cubeCoordinates.z + (cubeCoordinates.x - (cubeCoordinates.x & 1)) / 2);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetDistance(Vector2Int a, Vector2Int b)
         {
             return GetDistance(AxialToCubeCoordinates(a), AxialToCubeCoordinates(b));
         }
 
-        public static int GetDistance(Vector3Int a, Vector3Int b)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int GetDistance(Vector3Int a, Vector3Int b)
         {
             return Mathf.Max(Math.Abs(a.x - b.x), Math.Abs(a.y - b.y), Math.Abs(a.z - b.z));
         }

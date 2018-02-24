@@ -10,9 +10,9 @@ using static HexGameBoard.HexHelper;
 
 namespace HexGameBoard
 {
-    public static class PathFinder
+    public class PathFinder
     {
-        //private Field[][] fields;
+        private bool[][] fields;
         //private Vector2Int size;
 
 
@@ -42,19 +42,93 @@ namespace HexGameBoard
         //}
 
 
+
         /// <summary>
         ///     Wyszukuje najkrótszą ścieżkę między dwoma polami
         /// </summary>
         /// <param name="start">Pozycja początkowa</param>
         /// <param name="destination">Pozycja końcowa</param>
         /// <returns>Kolejka pól z najkrótszą ścieżką</returns>
+        //public static Stack<Vector2Int> Find(IField[][] fields, Vector2Int start, Vector2Int destination, int minAvailabilityLevel, Action<Vector2Int> action = null)
+        //{
+        //    var openSet = new SimplePriorityQueue<Field>();
+        //    var closedSet = new List<Field>();
+
+        //    var startField = new Field(start);
+        //    //startField.h = Heuristics(start, destination);
+
+        //    openSet.Enqueue(startField, 0);
+
+        //    while (openSet.Count > 0)
+        //    {
+        //        var actualField = openSet.Dequeue();
+
+        //        //System.Diagnostics.Debug.WriteLine($"\nWybrano {actualField.position}, g={actualField.g}, h={actualField.h}, F={actualField.F}, parent={actualField.parent?.position}\n");
+
+        //        // znaleziono ścieżkę
+        //        if (actualField.position == destination)
+        //            return CombinePath(actualField, startField);
+
+        //        closedSet.Add(actualField);
+
+        //        foreach (var neighborPosition in FindAvailableNeighbors(fields, actualField.position.x, actualField.position.y, minAvailabilityLevel))
+        //        {
+        //            var neighbor = new Field(neighborPosition);
+
+        //            if (closedSet.Contains(neighbor))
+        //            {
+        //                //System.Diagnostics.Debug.WriteLine($"Odrzucam {neighbor.position}, g={neighbor.g}, h={neighbor.h}, F={neighbor.F}, parent={neighbor.parent?.position}");
+        //                continue;
+        //            }
+
+        //            if (!openSet.Contains(neighbor))
+        //            {
+        //                neighbor.parent = actualField;
+        //                neighbor.g = actualField.g + 1;
+        //                neighbor.h = Heuristics(neighbor.position, destination);
+
+        //                openSet.Enqueue(neighbor, neighbor.F);
+
+        //                //System.Diagnostics.Debug.WriteLine($"Rozpatrzony {neighbor.position}, g={neighbor.g}, h={neighbor.h}, F={neighbor.F}, parent={neighbor.parent?.position}");
+        //            }
+        //            else
+        //            {
+        //                var neighborInQueue = openSet.First(f => f.position == neighborPosition); // raczej powolne
+        //                var estimatedG = actualField.g + 1;
+
+        //                if (estimatedG < neighborInQueue.g)
+        //                {
+        //                    neighborInQueue.parent = actualField;
+        //                    neighborInQueue.g = estimatedG;
+
+        //                    openSet.UpdatePriority(neighborInQueue, neighborInQueue.F);
+
+        //                    //System.Diagnostics.Debug.WriteLine($"Rozpatrzony (updated) {neighborInQueue.position}, g={neighborInQueue.g}, h={neighborInQueue.h}, F={neighborInQueue.F}, parent={neighborInQueue.parent?.position}");
+        //                }
+        //            }
+
+        //            action?.Invoke(neighborPosition);
+
+        //        }
+        //    }
+
+        //    return new Stack<Vector2Int>();
+        //}
+
         public static Stack<Vector2Int> Find(IField[][] fields, Vector2Int start, Vector2Int destination, int minAvailabilityLevel, Action<Vector2Int> action = null)
         {
-            var openSet = new SimplePriorityQueue<Field>();
+            var tempFields = new Field[fields.Length][];
+
+            for (int x = 0; x < fields.Length; x++)
+                tempFields[x] = new Field[fields[0].Length];
+
+            var openSet = new FastPriorityQueue<Field>(fields.Length * fields[0].Length);
+            //var openSet = new SimplePriorityQueue<Field>();
             var closedSet = new List<Field>();
 
-            var startField = new Field(start);
-            //startField.h = Heuristics(start, destination);
+            var startField = new Field(start) { onOpenSet = true };
+
+            tempFields[startField.position.x][startField.position.y] = startField;
 
             openSet.Enqueue(startField, 0);
 
@@ -70,29 +144,37 @@ namespace HexGameBoard
 
                 closedSet.Add(actualField);
 
-                foreach (var neighborPosition in FindAvailableNeighbors(fields, actualField.position.x, actualField.position.y, minAvailabilityLevel))
+                var neighbors = tempFields[actualField.position.x][actualField.position.y]?.neighbors
+                    ?? (tempFields[actualField.position.x][actualField.position.y].neighbors = FindAvailableNeighbors(fields, actualField.position.x, actualField.position.y, minAvailabilityLevel));
+
+
+                foreach (var neighborPosition in neighbors)
+                //neighbors.AsParallel().ForAll(neighborPosition =>
                 {
                     var neighbor = new Field(neighborPosition);
 
-                    if (closedSet.Contains(neighbor))
+                    if (tempFields[neighborPosition.x][neighborPosition.y]?.onClosedSet ?? false)
                     {
                         //System.Diagnostics.Debug.WriteLine($"Odrzucam {neighbor.position}, g={neighbor.g}, h={neighbor.h}, F={neighbor.F}, parent={neighbor.parent?.position}");
                         continue;
                     }
 
-                    if (!openSet.Contains(neighbor))
+                    if (tempFields[neighborPosition.x][neighborPosition.y] == null || !tempFields[neighborPosition.x][neighborPosition.y].onOpenSet)
                     {
                         neighbor.parent = actualField;
                         neighbor.g = actualField.g + 1;
                         neighbor.h = Heuristics(neighbor.position, destination);
+                        neighbor.onOpenSet = true;
 
                         openSet.Enqueue(neighbor, neighbor.F);
+                        tempFields[neighborPosition.x][neighborPosition.y] = neighbor;
 
                         //System.Diagnostics.Debug.WriteLine($"Rozpatrzony {neighbor.position}, g={neighbor.g}, h={neighbor.h}, F={neighbor.F}, parent={neighbor.parent?.position}");
                     }
                     else
-                    {                        
-                        var neighborInQueue = openSet.First(f => f.position == neighborPosition); // raczej powolne
+                    {
+                        //var neighborInQueue = openSet.First(f => f.position == neighborPosition); // raczej powolne
+                        var neighborInQueue = tempFields[neighborPosition.x][neighborPosition.y];
                         var estimatedG = actualField.g + 1;
 
                         if (estimatedG < neighborInQueue.g)
@@ -103,11 +185,11 @@ namespace HexGameBoard
                             openSet.UpdatePriority(neighborInQueue, neighborInQueue.F);
 
                             //System.Diagnostics.Debug.WriteLine($"Rozpatrzony (updated) {neighborInQueue.position}, g={neighborInQueue.g}, h={neighborInQueue.h}, F={neighborInQueue.F}, parent={neighborInQueue.parent?.position}");
-                        }                   
+                        }
                     }
 
                     action?.Invoke(neighborPosition);
-                    
+
                 }
             }
 
