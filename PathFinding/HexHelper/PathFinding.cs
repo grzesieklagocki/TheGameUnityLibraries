@@ -1,5 +1,4 @@
 ﻿using Priority_Queue;
-using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -172,7 +171,7 @@ namespace HexGameBoard
         private static Stack<Vector2Int> CombinePath(Field destination, Field start)
         {
             var path = new Stack<Vector2Int>(1);
-
+            
             for (var field = destination; field != null; field = field.parent)
                 path.Push(field.position);
 
@@ -215,7 +214,7 @@ namespace HexGameBoard
             return index.x >= 0
                 && index.y >= 0
                 && index.x < fields.Length
-                && index.y < fields[0].Length;
+                && index.y < fields[0].Length; 
         }
 
         #endregion

@@ -117,7 +117,7 @@ namespace HexGameBoard
         /// <returns>Pozycja sąsiedniego hexa</returns>
         public static Vector2Int IndexOfNeighbor(Vector2Int position, Direction direction)
         {
-            return position + offsets[Mathf.Abs(position.x % 2), (int)direction];
+            return position + offsets[Math.Abs(position.x % 2), (int)direction];
         }
 
         /// <summary>

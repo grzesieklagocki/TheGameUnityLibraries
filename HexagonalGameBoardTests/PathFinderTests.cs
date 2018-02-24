@@ -43,7 +43,8 @@ namespace HexGameBoard.Tests
 
             //var calcuated = HexHelper.GetDistance(start, destination);
 
-            Assert.AreEqual(true, actual: path.Count == /*calcuated + 1*/0);
+            Assert.AreEqual(true, actual: path.Count == 0);
+            //Assert.AreEqual(true, actual: path.Count != 0);
         }
 
         [TestMethod]

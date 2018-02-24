@@ -26,7 +26,6 @@ namespace HexGameBoard.Tests
         {
             var queue = new SimplePriorityQueue<int>();
 
-
             for (int i = 0; i < count; i++)
                 queue.Enqueue(array[i], array[i]);
 
