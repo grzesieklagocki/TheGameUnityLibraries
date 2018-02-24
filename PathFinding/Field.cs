@@ -31,8 +31,8 @@ namespace HexGameBoard
             //availableNeighbors = new List<Vector2Int>(2);
         }
 
-        internal bool onClosedSet;
-        internal bool onOpenSet;
+        internal bool onClosedSet = false;
+        internal bool onOpenSet = false;
 
         public bool Equals(Field other)
         {
