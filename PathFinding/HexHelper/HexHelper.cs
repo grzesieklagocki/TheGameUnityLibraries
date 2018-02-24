@@ -106,7 +106,7 @@ namespace HexGameBoard
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetDistance(Vector3Int a, Vector3Int b)
         {
-            return Mathf.Max(Math.Abs(a.x - b.x), Math.Abs(a.y - b.y), Math.Abs(a.z - b.z));
+            return Math.Max(Math.Abs(a.x - b.x), Math.Max(Math.Abs(a.y - b.y), Math.Abs(a.z - b.z)));
         }
 
         /// <summary>
@@ -192,6 +192,6 @@ namespace HexGameBoard
             }
 
             return fields;
-        }        
+        }
     }
 }
