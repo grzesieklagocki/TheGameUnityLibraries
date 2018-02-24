@@ -122,12 +122,11 @@ namespace HexGameBoard
             for (int x = 0; x < fields.Length; x++)
                 tempFields[x] = new Field[fields[0].Length];
 
+            var startField = new Field(start);
             var openSet = new FastPriorityQueue<Field>(fields.Length * fields[0].Length); // sprawdzić
             var closedSet = new List<Field>();
-            var startField = new Field(start) { onOpenSet = true };
 
-            openSet.Enqueue(startField, 0);
-            tempFields[startField.position.x][startField.position.y] = startField;
+            AddToOpenSet(openSet, tempFields, startField, 0);
 
             while (openSet.Count > 0)
             {
@@ -152,12 +151,11 @@ namespace HexGameBoard
                         {
                             parent = actualField,
                             g = actualField.g + 1,
-                            onOpenSet = true
                         };
 
                         neighbor.h = Heuristics(neighbor.position, destination);
-                        openSet.Enqueue(neighbor, neighbor.F);
-                        tempFields[neighborPosition.x][neighborPosition.y] = neighbor;                        
+
+                        AddToOpenSet(openSet, tempFields, neighbor, neighbor.F);                      
                     }
                     else
                     {
@@ -198,6 +196,14 @@ namespace HexGameBoard
         {
             return tempFields[field.x][field.y]?.neighbors
                     ?? (tempFields[field.x][field.y].neighbors = FindAvailableNeighbors(fields, field.x, field.y, minAvailabilityLevel));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void AddToOpenSet(FastPriorityQueue<Field> queue, Field[][] fields, Field field, float priority)
+        {
+            field.onOpenSet = true;
+            queue.Enqueue(field, priority);
+            fields[field.position.x][field.position.y] = field;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
