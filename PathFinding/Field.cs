@@ -6,7 +6,7 @@ namespace HexGameBoard
 {
     /// <summary>
     /// Pole (węzeł) ścieżki dla algorytmu A*.
-    /// Współpracuje z FastPriorityQueue:
+    /// Współpracuje z FastPriorityQueue<T>:
     /// https://github.com/BlueRaja/High-Speed-Priority-Queue-for-C-Sharp
     /// </summary>
     internal class Field : FastPriorityQueueNode
@@ -17,7 +17,7 @@ namespace HexGameBoard
         internal Field parent;
 
         /// <summary>
-        /// Index (pozycja w tablicy) pola
+        /// Index pola (pozycja w tablicy)
         /// </summary>
         internal Vector2Int position;
 
@@ -61,7 +61,7 @@ namespace HexGameBoard
         /// <summary>
         /// Inicjalizuje nową instację pola
         /// </summary>
-        /// <param name="position">Index (pozycja w tablicy) pola</param>
+        /// <param name="position">Index pola (pozycja w tablicy)</param>
         internal Field(Vector2Int position)
         {
             this.position = position;

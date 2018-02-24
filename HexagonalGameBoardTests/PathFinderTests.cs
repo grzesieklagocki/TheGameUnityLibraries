@@ -39,7 +39,7 @@ namespace HexGameBoard.Tests
             var start = new Vector2Int(0, 0);
             var destination = new Vector2Int(size.x - 1, size.y - 1);
 
-            var path = PathFinder.Find(fields, start, destination, 1);
+            var path = HexHelper.FindPath(fields, start, destination, 1);
 
             //var calcuated = HexHelper.GetDistance(start, destination);
 
