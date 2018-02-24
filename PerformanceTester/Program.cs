@@ -15,7 +15,7 @@ namespace PerformanceTester
         {
             var stopwatch = new Stopwatch();
             var size = new Vector2Int(100, 100);
-            Field[][] fields = InitializeFields(size.x, size.y);
+            PathFindableField[][] fields = InitializeFields(size);
             var repeats = 0;
             var start = new Vector2Int(0, 0);
             var destination = new Vector2Int(size.x - 1, size.y - 1);
@@ -39,36 +39,33 @@ namespace PerformanceTester
         }
 
 
-        static Field[][] InitializeFields(int sizeX, int sizeY)
+        static PathFindableField[][] InitializeFields(Vector2Int size)
         {
-            var fields = new Field[sizeX][];
+            var fields = new PathFindableField[size.x][];
 
-            for (int x = 0; x < sizeX; x++)
+            for (int x = 0; x < size.x; x++)
             {
-                fields[x] = new Field[sizeY];
+                fields[x] = new PathFindableField[size.y];
 
-                for (int y = 0; y < sizeY; y++)
+                for (int y = 0; y < size.y; y++)
                 {
-                    fields[x][y] = new TestField(x, y);
+                    fields[x][y] = new TestField(new Vector2Int(x, y));
                 }
             }
 
-            fields[sizeX - 1][sizeY - 1].isAvailable = false;
+            fields[size.x - 1][size.y - 1].isAvailable = false;
 
             return fields;
         }
     }
 
 
-    public class TestField : Field
+    public class TestField : PathFindableField
     {
-        public bool IsAvailable { get; set; }
-        public Vector2Int Position { get; set; }
-
-        public TestField(int positionX, int positionY, bool isAvailable = true)
+        public TestField(Vector2Int position, bool isAvailable = true) : base(position, isAvailable)
         {
-            IsAvailable = isAvailable;
-            Position = new Vector2Int(positionX, positionY);
+            this.isAvailable = isAvailable;
+            this.position = position;
         }
     }
 }

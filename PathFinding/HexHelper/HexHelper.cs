@@ -1,5 +1,4 @@
-﻿using Priority_Queue;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -127,6 +126,7 @@ namespace HexGameBoard
         /// <param name="field">Pole leżace w lewym dolnym rogu okręgu</param>
         /// <param name="layer">Numer warstwy</param>
         /// <returns>Lista pól</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static List<Vector2Int> GetHexRing(Vector2Int field, int layer)
         {
             var fields = new List<Vector2Int>();

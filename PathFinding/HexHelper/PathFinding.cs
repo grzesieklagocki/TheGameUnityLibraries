@@ -16,7 +16,7 @@ namespace HexGameBoard
         /// <param name="start">Pole startowe</param>
         /// <param name="destination">Pole końcowe</param>
         /// <returns>Najkrótsza ścieżka (stos)</returns>
-        public static Stack<Vector2Int> FindPath(Field[][] fields, Vector2Int start, Vector2Int destination)
+        public static Stack<Vector2Int> FindPath(PathFindableField[][] fields, Vector2Int start, Vector2Int destination)
         {
             var startField = new Node(start);
             var openSet = new FastPriorityQueue<Node>(fields.Length * fields[0].Length); // sprawdzić
@@ -139,7 +139,7 @@ namespace HexGameBoard
         /// <param name="fields">Tablica pól z zadeklarowną dostępnością</param>
         /// <returns>Pomocnicza tablica</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Node[][] InitializeFieldsCache(Field[][] fields)
+        private static Node[][] InitializeFieldsCache(PathFindableField[][] fields)
         {
             var sizeX = fields.Length;
             var sizeY = fields[0].Length;
@@ -184,7 +184,7 @@ namespace HexGameBoard
         /// <param name="nodePosition">Pozycja wybranego węzła</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static List<Vector2Int> GetNeighbors(Field[][] fields, Node[][] nodes, Vector2Int nodePosition)
+        private static List<Vector2Int> GetNeighbors(PathFindableField[][] fields, Node[][] nodes, Vector2Int nodePosition)
         {
             return nodes[nodePosition.x][nodePosition.y]?.neighbors
                     ?? (nodes[nodePosition.x][nodePosition.y].neighbors = FindAvailableNeighbors(fields, nodePosition.x, nodePosition.y));
@@ -242,7 +242,7 @@ namespace HexGameBoard
         /// <param name="y">Pozycja Y</param>
         /// <returns>Lista dostępnych sąsiadów</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static List<Vector2Int> FindAvailableNeighbors(Field[][] fields, int x, int y)
+        private static List<Vector2Int> FindAvailableNeighbors(PathFindableField[][] fields, int x, int y)
         {
             var neightbors = new List<Vector2Int>(2);
 
@@ -264,7 +264,7 @@ namespace HexGameBoard
         /// <param name="fields">Tablica pól z zadeklarowną dostępnością</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool HasValidIndex(Vector2Int index, Field[][] fields)
+        private static bool HasValidIndex(Vector2Int index, PathFindableField[][] fields)
         {
             return index.x >= 0
                 && index.y >= 0

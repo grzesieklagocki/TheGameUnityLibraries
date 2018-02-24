@@ -12,25 +12,25 @@ namespace HexGameBoard.Tests
     [TestClass()]
     public class PathFinderTests
     {
-        private Field[][] fields;
+        private PathFindableField[][] fields;
         private Vector2Int size = new Vector2Int(100, 100);
 
         [TestInitialize]
         public void Init()
         {
-            fields = new Field[size.x][];
+            fields = new PathFindableField[size.x][];
 
             for (int x = 0; x < size.x; x++)
             {
-                fields[x] = new Field[size.y];
+                fields[x] = new PathFindableField[size.y];
 
                 for (int y = 0; y < size.y; y++)
                 {
-                    fields[x][y] = new TestField(x, y);
+                    fields[x][y] = new TestField(x, y, true);
                 }
             }
 
-            fields[size.x - 1][size.y - 1].isAvailable = false;
+            //fields[size.x - 1][size.y - 1].isAvailable = false;
         }
 
         [TestMethod()]
@@ -45,8 +45,8 @@ namespace HexGameBoard.Tests
 
             //var calcuated = HexHelper.GetDistance(start, destination);
 
-            Assert.AreEqual(true, actual: path.Count == 0);
-            //Assert.AreEqual(true, actual: path.Count != 0);
+            //Assert.AreEqual(true, actual: path.Count == 0);
+            Assert.AreEqual(true, actual: path.Count != 0);
         }
 
         [TestMethod]
@@ -67,15 +67,11 @@ namespace HexGameBoard.Tests
         }
     }
 
-    public class TestField : Field
+    public class TestField : PathFindableField
     {
-        public bool IsAvailable { get; set; }
-        public Vector2Int Position { get; set; }
-
-        public TestField(int positionX, int positionY, bool isAvailable = true)
+        public TestField(int positionX, int positionY, bool isAvailable = true) : base(positionX, positionY, isAvailable)
         {
-            IsAvailable = isAvailable;
-            Position = new Vector2Int(positionX, positionY);
+
         }
     }
 }
