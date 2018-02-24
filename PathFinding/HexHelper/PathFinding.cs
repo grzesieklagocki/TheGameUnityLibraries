@@ -1,4 +1,5 @@
 ﻿using Priority_Queue;
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -14,16 +15,15 @@ namespace HexGameBoard
         /// <param name="fields">Tablica pól z zadeklarowną dostępnością</param>
         /// <param name="start">Pole startowe</param>
         /// <param name="destination">Pole końcowe</param>
-        /// <param name="minAvailabilityLevel">Minimalny poziom dostępności</param>
         /// <returns>Najkrótsza ścieżka (stos)</returns>
-        public static Stack<Vector2Int> FindPath(IField[][] fields, Vector2Int start, Vector2Int destination, int minAvailabilityLevel)
+        public static Stack<Vector2Int> FindPath(Field[][] fields, Vector2Int start, Vector2Int destination)
         {
-            var startField = new Field(start);
-            var openSet = new FastPriorityQueue<Field>(fields.Length * fields[0].Length); // sprawdzić
-            var closedSet = new List<Field>();
-            var fieldsCache = InitializeFieldsCache(fields);
+            var startField = new Node(start);
+            var openSet = new FastPriorityQueue<Node>(fields.Length * fields[0].Length); // sprawdzić
+            var closedSet = new List<Node>();
+            var nodes = InitializeFieldsCache(fields);
 
-            AddToOpenSet(openSet, fieldsCache, startField);
+            AddToOpenSet(openSet, nodes, startField);
 
             while (openSet.Count > 0)
             {
@@ -35,16 +35,16 @@ namespace HexGameBoard
 
                 closedSet.Add(actualField);
 
-                var neighbors = GetNeighbors(fields, fieldsCache, actualField.position, minAvailabilityLevel);
+                var neighbors = GetNeighbors(fields, nodes, actualField.position);
 
                 foreach (var neighborPosition in neighbors)
                 {
-                    if (IsOnClosedSet(neighborPosition, fieldsCache))
+                    if (IsOnClosedSet(neighborPosition, nodes))
                         continue;
 
-                    if (IsOnOpenSet(neighborPosition, fieldsCache))
+                    if (IsOnOpenSet(neighborPosition, nodes))
                     {
-                        var neighbor = new Field(neighborPosition)
+                        var neighbor = new Node(neighborPosition)
                         {
                             parent = actualField,
                             g = actualField.g + 1,
@@ -52,11 +52,11 @@ namespace HexGameBoard
 
                         neighbor.h = Heuristics(neighbor.position, destination);
 
-                        AddToOpenSet(openSet, fieldsCache, neighbor);
+                        AddToOpenSet(openSet, nodes, neighbor);
                     }
                     else
                     {
-                        var neighbor = fieldsCache[neighborPosition.x][neighborPosition.y];
+                        var neighbor = nodes[neighborPosition.x][neighborPosition.y];
                         var g = actualField.g + 1;
 
                         if (g < neighbor.g)
@@ -73,80 +73,136 @@ namespace HexGameBoard
             return new Stack<Vector2Int>();
         }
 
+        #region Convert Coordinates
+
+        /// <summary>
+        ///     Konwertuje współrzędne kartezjańskie 2D na współrzędne mapowania sześciennego.
+        /// </summary>
+        /// <param name="axialCoordinates">Współrzędne kartezjańskie 2D</param>
+        /// <returns>Współrzędne mapowania sześciennego</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3Int AxialToCubeCoordinates(Vector2Int axialCoordinates)
+        {
+            var x = axialCoordinates.x;
+            var z = axialCoordinates.y - (axialCoordinates.x - (axialCoordinates.x & 1)) / 2;
+            var y = -x - z;
+
+            return new Vector3Int(x, y, z);
+        }
+
+        /// <summary>
+        ///     Konwertuje współrzędne mapowania sześciennego na współrzędne kartezjańskie 2D.
+        /// </summary>
+        /// <param name="cubeCoordinates">Współrzędne mapowania sześciennego</param>
+        /// <returns>Współrzędne kartezjańskie 2D</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2Int CubeToAxialCoordinates(Vector3Int cubeCoordinates)
+        {
+            return new Vector2Int(cubeCoordinates.x, cubeCoordinates.z + (cubeCoordinates.x - (cubeCoordinates.x & 1)) / 2);
+        }
+
+        #endregion
+
+        #region Get Distance
+
+        /// <summary>
+        ///     Określa dystans pomiędzy dwoma polami (zdefiniowanymi we współrzędnych kartezjańskich 2D). Ignoruje przeszkody.
+        /// </summary>
+        /// <param name="a">Pierwsze pole (współrzędne kartezjańskie 2D)</param>
+        /// <param name="b">Drugie pole (współrzędne kartezjańskie 2D)</param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetDistance(Vector2Int a, Vector2Int b)
+        {
+            return GetDistance(AxialToCubeCoordinates(a), AxialToCubeCoordinates(b));
+        }
+
+        /// <summary>
+        ///     Określa dystans pomiędzy dwoma polami (zdefiniowanymi we współrzędnych mapowania sześniennego). Ignoruje przeszkody.
+        /// </summary>
+        /// <param name="a">Pierwsze pole (współrzędne mapowania sześciennego)</param>
+        /// <param name="b">Drugie pole (współrzędne mapowania sześciennego)</param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetDistance(Vector3Int a, Vector3Int b)
+        {
+            return Math.Max(Math.Abs(a.x - b.x), Math.Max(Math.Abs(a.y - b.y), Math.Abs(a.z - b.z)));
+        }
+
+        #endregion
 
         #region Helpers
 
         /// <summary>
-        ///     Inicjalizuje pomocniczą tablicę do przechowywania węzłów
+        ///     Inicjalizuje tablicę do przechowywania węzłów
         /// </summary>
         /// <param name="fields">Tablica pól z zadeklarowną dostępnością</param>
         /// <returns>Pomocnicza tablica</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Field[][] InitializeFieldsCache(IField[][] fields)
+        private static Node[][] InitializeFieldsCache(Field[][] fields)
         {
             var sizeX = fields.Length;
             var sizeY = fields[0].Length;
-            var tempFields = new Field[sizeX][];
+            var nodes = new Node[sizeX][];
 
             for (int x = 0; x < sizeX; x++)
-                tempFields[x] = new Field[sizeY];
+                nodes[x] = new Node[sizeY];
 
-            return tempFields;
+            return nodes;
         }
 
         /// <summary>
-        ///     Określa, czy wybrane pole znajduje się na liście otwartej
+        ///     Określa, czy wybrany węzeł znajduje się na liście otwartej
         /// </summary>
-        /// <param name="field">Wybrane pole</param>
-        /// <param name="fields">Tymczasowa tablica</param>
+        /// <param name="nodePosition">Pozycja wybranego węzła</param>
+        /// <param name="nodes">Tablica węzłów</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsOnOpenSet(Vector2Int field, Field[][] fields)
+        private static bool IsOnOpenSet(Vector2Int nodePosition, Node[][] nodes)
         {
-            return fields[field.x][field.y] == null || !fields[field.x][field.y].isInOpenSet;
+            return nodes[nodePosition.x][nodePosition.y] == null || !nodes[nodePosition.x][nodePosition.y].isInOpenSet;
         }
 
         /// <summary>
-        ///     Określa, czy wybrane pole znajduje się na liście zamkniętej
+        ///     Określa, czy wybrany węzeł znajduje się na liście zamkniętej
         /// </summary>
-        /// <param name="field">Wybrane pole</param>
-        /// <param name="fields">Tymczasowa tablica</param>
+        /// <param name="nodePosition">Pozycja wybranego węzła</param>
+        /// <param name="nodes">Tablica węzłów</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsOnClosedSet(Vector2Int field, Field[][] fields)
+        private static bool IsOnClosedSet(Vector2Int nodePosition, Node[][] nodes)
         {
-            return fields[field.x][field.y]?.isInClosedSet ?? false;
+            return nodes[nodePosition.x][nodePosition.y]?.isInClosedSet ?? false;
         }
 
         /// <summary>
-        ///     Zwraca listę dostępnych sąsiadów.
-        ///     Jeśli nie ma ich w fieldsCache - znajduje i dodaje.
+        ///     Zwraca listę sąsiednich węzłów.
+        ///     Jeśli nie ma jej w tablicy węzłów - znajduje sąsiadów i dodaje listę do tablicy.
         /// </summary>
         /// <param name="fields">Tablica pól z zadeklarowną dostępnością</param>
-        /// <param name="fieldsCache">Tymczasowa tablica</param>
-        /// <param name="field">Wybrane pole</param>
-        /// <param name="minAvailabilityLevel">Minimalny poziom dostępności</param>
+        /// <param name="nodes">Tablica węzłów</param>
+        /// <param name="nodePosition">Pozycja wybranego węzła</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static List<Vector2Int> GetNeighbors(IField[][] fields, Field[][] fieldsCache, Vector2Int field, int minAvailabilityLevel)
+        private static List<Vector2Int> GetNeighbors(Field[][] fields, Node[][] nodes, Vector2Int nodePosition)
         {
-            return fieldsCache[field.x][field.y]?.neighbors
-                    ?? (fieldsCache[field.x][field.y].neighbors = FindAvailableNeighbors(fields, field.x, field.y, minAvailabilityLevel));
+            return nodes[nodePosition.x][nodePosition.y]?.neighbors
+                    ?? (nodes[nodePosition.x][nodePosition.y].neighbors = FindAvailableNeighbors(fields, nodePosition.x, nodePosition.y));
         }
 
         /// <summary>
-        ///     Dodaje pole do listy otwartej.
-        ///     Dodaje do fieldsCache.
+        ///     Dodaje węzeł do listy otwartej.
+        ///     Dodaje do tablicy węzłów.
         /// </summary>
         /// <param name="openSet">Lista otwarta</param>
-        /// <param name="fields">Tablica pól z zadeklarowną dostępnością</param>
-        /// <param name="field">Wybrane pole</param>
+        /// <param name="nodes">Tablica węzłów</param>
+        /// <param name="node">Wybrany węzeł</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void AddToOpenSet(FastPriorityQueue<Field> openSet, Field[][] fields, Field field)
+        private static void AddToOpenSet(FastPriorityQueue<Node> openSet, Node[][] nodes, Node node)
         {
-            field.isInOpenSet = true;
-            openSet.Enqueue(field, field.F);
-            fields[field.position.x][field.position.y] = field;
+            node.isInOpenSet = true;
+            openSet.Enqueue(node, node.F);
+            nodes[node.position.x][node.position.y] = node;
         }
 
         /// <summary>
@@ -164,16 +220,16 @@ namespace HexGameBoard
         /// <summary>
         ///     Zwraca stos z najkrótszą ścieżką.
         /// </summary>
-        /// <param name="destination">Pole startowe</param>
-        /// <param name="start">Pole końcowe</param>
+        /// <param name="destination">Węzeł startowy</param>
+        /// <param name="start">Węzeł końcowy</param>
         /// <returns>Stos</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Stack<Vector2Int> CombinePath(Field destination, Field start)
+        private static Stack<Vector2Int> CombinePath(Node destination, Node start)
         {
             var path = new Stack<Vector2Int>(1);
             
-            for (var field = destination; field != null; field = field.parent)
-                path.Push(field.position);
+            for (var node = destination; node != null; node = node.parent)
+                path.Push(node.position);
 
             return path;
         }
@@ -184,18 +240,17 @@ namespace HexGameBoard
         /// <param name="fields">Tablica pól z zadeklarowną dostępnością</param>
         /// <param name="x">Pozycja X</param>
         /// <param name="y">Pozycja Y</param>
-        /// <param name="minAvailabilityLevel">Minimalny poziom dostępności</param>
         /// <returns>Lista dostępnych sąsiadów</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static List<Vector2Int> FindAvailableNeighbors(IField[][] fields, int x, int y, int minAvailabilityLevel)
+        private static List<Vector2Int> FindAvailableNeighbors(Field[][] fields, int x, int y)
         {
             var neightbors = new List<Vector2Int>(2);
 
             for (var direction = 0; direction < 6; direction++)
             {
-                var neighbor = IndexOfNeighbor(fields[x][y].Position, (Direction)direction);
+                var neighbor = IndexOfNeighbor(fields[x][y].position, (Direction)direction);
 
-                if (HasValidIndex(neighbor, fields) && fields[neighbor.x][neighbor.y].AvailabilityLevel >= minAvailabilityLevel)
+                if (HasValidIndex(neighbor, fields) && fields[neighbor.x][neighbor.y].isAvailable)
                     neightbors.Add(neighbor);
             }
 
@@ -209,7 +264,7 @@ namespace HexGameBoard
         /// <param name="fields">Tablica pól z zadeklarowną dostępnością</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool HasValidIndex(Vector2Int index, IField[][] fields)
+        private static bool HasValidIndex(Vector2Int index, Field[][] fields)
         {
             return index.x >= 0
                 && index.y >= 0

@@ -1,70 +1,23 @@
-﻿using Priority_Queue;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace HexGameBoard
 {
-    /// <summary>
-    /// Pole (węzeł) ścieżki dla algorytmu A*.
-    /// Współpracuje z FastPriorityQueue<T>:
-    /// https://github.com/BlueRaja/High-Speed-Priority-Queue-for-C-Sharp
-    /// </summary>
-    internal class Field : FastPriorityQueueNode
+    public class Field
     {
         /// <summary>
-        /// Poprzednie pole aktualnej ścieżki
+        ///     Poziom dostępności pola:
+        ///     0 - niedostępne
+        ///     1 - tymczasowo niedostępne
+        ///     ...
+        ///     n - zawsze dostępne
         /// </summary>
-        internal Field parent;
+        public bool isAvailable;
 
-        /// <summary>
-        /// Index pola (pozycja w tablicy)
-        /// </summary>
-        internal Vector2Int position;
-
-        /// <summary>
-        /// Lista indeksów pól na które można przejść
-        /// </summary>
-        internal List<Vector2Int> neighbors;
-
-        /// <summary>
-        /// Określa, czy pole jest na zamkniętej liście algorytmu A*
-        /// </summary>
-        internal bool isInClosedSet = false;
-
-        /// <summary>
-        /// Określa, czy pole jest na otwartej liście algorytmu A*
-        /// </summary>
-        internal bool isInOpenSet = false;
-
-        /// <summary>
-        /// Odległość od pola startowego
-        /// </summary>
-        internal float g = 0;
-
-        /// <summary>
-        /// Szacowana odległość do celu
-        /// </summary>
-        internal float h = 0;
-
-        /// <summary>
-        /// Szacowana długość ścieżki
-        /// </summary>
-        internal float F
-        {
-            get
-            {
-                return g + h;
-            }
-        }
-
-
-        /// <summary>
-        /// Inicjalizuje nową instację pola
-        /// </summary>
-        /// <param name="position">Index pola (pozycja w tablicy)</param>
-        internal Field(Vector2Int position)
-        {
-            this.position = position;
-        }
+        public Vector2Int position;
     }
 }

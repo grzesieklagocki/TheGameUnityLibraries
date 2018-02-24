@@ -12,25 +12,25 @@ namespace HexGameBoard.Tests
     [TestClass()]
     public class PathFinderTests
     {
-        private IField[][] fields;
+        private Field[][] fields;
         private Vector2Int size = new Vector2Int(100, 100);
 
         [TestInitialize]
         public void Init()
         {
-            fields = new IField[size.x][];
+            fields = new Field[size.x][];
 
             for (int x = 0; x < size.x; x++)
             {
-                fields[x] = new IField[size.y];
+                fields[x] = new Field[size.y];
 
                 for (int y = 0; y < size.y; y++)
                 {
-                    fields[x][y] = new TestField(x, y, 2);
+                    fields[x][y] = new TestField(x, y);
                 }
             }
 
-            fields[size.x - 1][size.y - 1].AvailabilityLevel = 0;
+            fields[size.x - 1][size.y - 1].isAvailable = false;
         }
 
         [TestMethod()]
@@ -40,7 +40,7 @@ namespace HexGameBoard.Tests
             var destination = new Vector2Int(size.x - 1, size.y - 1);
 
             var watch = new System.Diagnostics.Stopwatch(); watch.Start();
-            var path = HexHelper.FindPath(fields, start, destination, 1);
+            var path = HexHelper.FindPath(fields, start, destination);
             watch.Stop(); var time = watch.ElapsedMilliseconds;
 
             //var calcuated = HexHelper.GetDistance(start, destination);
@@ -67,14 +67,14 @@ namespace HexGameBoard.Tests
         }
     }
 
-    public class TestField : IField
+    public class TestField : Field
     {
-        public int AvailabilityLevel { get; set; }
+        public bool IsAvailable { get; set; }
         public Vector2Int Position { get; set; }
 
-        public TestField(int positionX, int positionY, int availabilityLevel)
+        public TestField(int positionX, int positionY, bool isAvailable = true)
         {
-            AvailabilityLevel = availabilityLevel;
+            IsAvailable = isAvailable;
             Position = new Vector2Int(positionX, positionY);
         }
     }

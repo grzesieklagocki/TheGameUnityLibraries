@@ -15,7 +15,7 @@ namespace PerformanceTester
         {
             var stopwatch = new Stopwatch();
             var size = new Vector2Int(100, 100);
-            IField[][] fields = InitializeFields(size.x, size.y);
+            Field[][] fields = InitializeFields(size.x, size.y);
             var repeats = 0;
             var start = new Vector2Int(0, 0);
             var destination = new Vector2Int(size.x - 1, size.y - 1);
@@ -31,7 +31,7 @@ namespace PerformanceTester
                 stopwatch.Restart();
 
                 for (int i = 0; i < repeats; i++)
-                    HexHelper.FindPath(fields, start, destination, 1);
+                    HexHelper.FindPath(fields, start, destination);
 
                 stopwatch.Stop();
                 Console.WriteLine(stopwatch.ElapsedMilliseconds + "ms");
@@ -39,35 +39,35 @@ namespace PerformanceTester
         }
 
 
-        static IField[][] InitializeFields(int sizeX, int sizeY)
+        static Field[][] InitializeFields(int sizeX, int sizeY)
         {
-            var fields = new IField[sizeX][];
+            var fields = new Field[sizeX][];
 
             for (int x = 0; x < sizeX; x++)
             {
-                fields[x] = new IField[sizeY];
+                fields[x] = new Field[sizeY];
 
                 for (int y = 0; y < sizeY; y++)
                 {
-                    fields[x][y] = new TestField(x, y, 2);
+                    fields[x][y] = new TestField(x, y);
                 }
             }
 
-            fields[sizeX - 1][sizeY - 1].AvailabilityLevel = 0;
+            fields[sizeX - 1][sizeY - 1].isAvailable = false;
 
             return fields;
         }
     }
 
 
-    public class TestField : IField
+    public class TestField : Field
     {
-        public int AvailabilityLevel { get; set; }
+        public bool IsAvailable { get; set; }
         public Vector2Int Position { get; set; }
 
-        public TestField(int positionX, int positionY, int availabilityLevel)
+        public TestField(int positionX, int positionY, bool isAvailable = true)
         {
-            AvailabilityLevel = availabilityLevel;
+            IsAvailable = isAvailable;
             Position = new Vector2Int(positionX, positionY);
         }
     }
