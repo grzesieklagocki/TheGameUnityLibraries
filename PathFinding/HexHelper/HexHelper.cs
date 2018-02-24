@@ -15,11 +15,17 @@ namespace HexGameBoard
         /// </summary>
         public enum Direction
         {
+            /// <summary>Powyżej</summary>
             up,
+            /// <summary>W prawym górnym rogu</summary>
             upperRight,
+            /// <summary>W prawym dolnym rogu</summary>
             lowerRight,
+            /// <summary>Poniżej</summary>
             bottom,
+            /// <summary>W lewym dolnym rogu</summary>
             lowerLeft,
+            /// <summary>W lewym górnym rogu</summary>
             upperLeft
         }
 
@@ -73,7 +79,8 @@ namespace HexGameBoard
         /// <summary>
         ///     Zwraca listę wszystkich hexów będacych w odległości nie większej niż zadany promień
         /// </summary>
-        /// <param name="centerPosition">Pozycja bazowego hexa</param>
+        /// <param name="centerPositionX">Pozycja X bazowego hexa</param>
+        /// <param name="centerPositionY">Pozycja Y bazowego hexa</param>
         /// <param name="outerRadius">Promień zewnętrzny</param>
         /// <param name="innerRadius">Promień wewnętrzny</param>
         /// <returns>Lista hexów w zasięgu</returns>

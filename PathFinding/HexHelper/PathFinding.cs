@@ -12,7 +12,7 @@ namespace HexGameBoard
         ///     Wyszukuje najkrótszą ścieżkę pomiędzy dwoma polami.
         ///     Implementacja algorytmu A*.
         /// </summary>
-        /// <param name="fields">Tablica pól z zadeklarowną dostępnością</param>
+        /// <param name="fields">Tablica pól z zadeklarowną dostępnością. Muszą dziedziczyć po klasie HexGameBoard.PathFindableField</param>
         /// <param name="start">Pole startowe</param>
         /// <param name="destination">Pole końcowe</param>
         /// <returns>Najkrótsza ścieżka (stos)</returns>

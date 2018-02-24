@@ -6,7 +6,7 @@ namespace HexGameBoard
 {
     /// <summary>
     ///     Pole (węzeł) ścieżki dla algorytmu A*.
-    /// Współpracuje z FastPriorityQueue<T>:
+    /// Współpracuje z FastPriorityQueue:
     /// https://github.com/BlueRaja/High-Speed-Priority-Queue-for-C-Sharp
     /// </summary>
     internal class Node : FastPriorityQueueNode
