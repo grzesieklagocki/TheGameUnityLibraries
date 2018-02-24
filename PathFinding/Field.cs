@@ -1,18 +1,54 @@
 ﻿using Priority_Queue;
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace HexGameBoard
 {
-    public class Field : FastPriorityQueueNode, IEquatable<Field>
+    /// <summary>
+    /// Pole (węzeł) ścieżki dla algorytmu A*.
+    /// Współpracuje z FastPriorityQueue:
+    /// https://github.com/BlueRaja/High-Speed-Priority-Queue-for-C-Sharp
+    /// </summary>
+    internal class Field : FastPriorityQueueNode
     {
-        internal Vector2Int position;
-        //internal List<Vector2Int> availableNeighbors;
+        /// <summary>
+        /// Poprzednie pole aktualnej ścieżki
+        /// </summary>
+        internal Field parent;
 
+        /// <summary>
+        /// Index (pozycja w tablicy) pola
+        /// </summary>
+        internal Vector2Int position;
+
+        /// <summary>
+        /// Lista indeksów pól na które można przejść
+        /// </summary>
+        internal List<Vector2Int> neighbors;
+
+        /// <summary>
+        /// Określa, czy pole jest na zamkniętej liście algorytmu A*
+        /// </summary>
+        internal bool isInClosedSet = false;
+
+        /// <summary>
+        /// Określa, czy pole jest na otwartej liście algorytmu A*
+        /// </summary>
+        internal bool isInOpenSet = false;
+
+        /// <summary>
+        /// Odległość od pola startowego
+        /// </summary>
         internal float g = 0;
+
+        /// <summary>
+        /// Szacowana odległość do celu
+        /// </summary>
         internal float h = 0;
 
+        /// <summary>
+        /// Szacowana długość ścieżki
+        /// </summary>
         internal float F
         {
             get
@@ -21,32 +57,14 @@ namespace HexGameBoard
             }
         }
 
-        internal List<Vector2Int> neighbors;
 
-        internal Field parent;
-
+        /// <summary>
+        /// Inicjalizuje nową instację pola
+        /// </summary>
+        /// <param name="position">Index (pozycja w tablicy) pola</param>
         internal Field(Vector2Int position)
         {
             this.position = position;
-            //availableNeighbors = new List<Vector2Int>(2);
-        }
-
-        internal bool onClosedSet = false;
-        internal bool onOpenSet = false;
-
-        public bool Equals(Field other)
-        {
-            return position == other?.position;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return Equals(obj as Field);
-        }
-
-        public override int GetHashCode()
-        {
-            return (1000 * position.x) + position.y;
         }
     }
 }

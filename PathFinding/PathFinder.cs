@@ -117,14 +117,10 @@ namespace HexGameBoard
 
         public static Stack<Vector2Int> Find(IField[][] fields, Vector2Int start, Vector2Int destination, int minAvailabilityLevel, Action<Vector2Int> action = null)
         {
-            var tempFields = new Field[fields.Length][];
-
-            for (int x = 0; x < fields.Length; x++)
-                tempFields[x] = new Field[fields[0].Length];
-
             var startField = new Field(start);
             var openSet = new FastPriorityQueue<Field>(fields.Length * fields[0].Length); // sprawdzić
             var closedSet = new List<Field>();
+            var tempFields = InitializeTempFields(fields);
 
             AddToOpenSet(openSet, tempFields, startField, 0);
 
@@ -155,7 +151,7 @@ namespace HexGameBoard
 
                         neighbor.h = Heuristics(neighbor.position, destination);
 
-                        AddToOpenSet(openSet, tempFields, neighbor, neighbor.F);                      
+                        AddToOpenSet(openSet, tempFields, neighbor, neighbor.F);                 
                     }
                     else
                     {
@@ -180,15 +176,28 @@ namespace HexGameBoard
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Field[][] InitializeTempFields(IField[][] fields)
+        {
+            int sizeX = fields.Length;
+            int sizeY = fields[0].Length;
+            var tempFields = new Field[sizeX][];
+
+            for (int x = 0; x < fields.Length; x++)
+                tempFields[x] = new Field[sizeY];
+
+            return tempFields;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsOnOpenSet(Field[][] fields, Vector2Int field)
         {
-            return (fields[field.x][field.y] == null || !fields[field.x][field.y].onOpenSet);
+            return fields[field.x][field.y] == null || !fields[field.x][field.y].isInOpenSet;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsOnClosedSet(Field[][] fields, Vector2Int field)
         {
-            return fields[field.x][field.y]?.onClosedSet ?? false;
+            return fields[field.x][field.y]?.isInClosedSet ?? false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -201,7 +210,7 @@ namespace HexGameBoard
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void AddToOpenSet(FastPriorityQueue<Field> queue, Field[][] fields, Field field, float priority)
         {
-            field.onOpenSet = true;
+            field.isInOpenSet = true;
             queue.Enqueue(field, priority);
             fields[field.position.x][field.position.y] = field;
         }
@@ -209,24 +218,13 @@ namespace HexGameBoard
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static float Heuristics(Vector2Int a, Vector2Int b)
         {
-            //return Vector2Int.Distance(a, b);
-            //return Mathf.Abs(a.x - a.y)
-
-            var distance = GetDistance(a, b);
-            return distance;
+            return GetDistance(a, b);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Stack<Vector2Int> CombinePath(Field destination, Field start)
         {
             var path = new Stack<Vector2Int>(1);
-
-            //path.Push(destination.position);
-
-            //var field = destination;
-
-            //while ((field = field.parent) != null)
-            //    path.Push(field.position);
 
             for (var field = destination; field != null; field = field.parent)
                 path.Push(field.position);
@@ -270,7 +268,7 @@ namespace HexGameBoard
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static List<Vector2Int> FindAvailableNeighbors(IField[][] fields, int x, int y, int minAvailabilityLevel)
         {
-            var neightbors = new List<Vector2Int>();
+            var neightbors = new List<Vector2Int>(2);
 
             for (var direction = 0; direction < 6; direction++)
             {

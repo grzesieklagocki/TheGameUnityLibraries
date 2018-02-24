@@ -40,6 +40,7 @@ namespace HexGameBoard.Tests
             var destination = new Vector2Int(size.x - 1, size.y - 1);
 
             var path = PathFinder.Find(fields, start, destination, 1);
+
             //var calcuated = HexHelper.GetDistance(start, destination);
 
             Assert.AreEqual(true, actual: path.Count == /*calcuated + 1*/0);
