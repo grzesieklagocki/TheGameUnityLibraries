@@ -21,20 +21,31 @@ namespace PerformanceTester
             var destination = new Vector2Int(size.x - 1, size.y - 1);
 
             while(true)
-            {
-                Console.Write("Przebiegów: ");
+            {           
+                string parameters = string.Empty;
 
-                while (!int.TryParse(Console.ReadLine(), out repeats))
-                    ;
+                do
+                {
+                    Console.Write("Przebiegów: ");
+                }
+                while (!int.TryParse(new string((parameters = Console.ReadLine()).Where(c => char.IsDigit(c)).ToArray()), out repeats));
 
-
-                stopwatch.Restart();
-
+                if (parameters.Contains("s"))
+                    destination.x = size.x - 2;
+                else
+                    destination.x = size.x - 1;
+                
+               
                 for (int i = 0; i < repeats; i++)
+                {
+                    stopwatch.Start();
                     HexHelper.FindPath(fields, start, destination);
+                    stopwatch.Stop();
+                }
 
-                stopwatch.Stop();
                 Console.WriteLine(stopwatch.ElapsedMilliseconds + "ms");
+
+                stopwatch.Reset();
             }
         }
 

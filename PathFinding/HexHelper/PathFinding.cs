@@ -9,33 +9,37 @@ namespace HexGameBoard
     public abstract partial class HexHelper
     {
         /// <summary>
-        ///     Wyszukuje najkrótszą ścieżkę pomiędzy dwoma polami.
+        ///     Wyszukuje najkrótszą ścieżkę pomiędzy dwoma polami.  
         ///     Implementacja algorytmu A*.
         /// </summary>
-        /// <param name="fields">Tablica pól z zadeklarowną dostępnością. Muszą dziedziczyć po klasie HexGameBoard.PathFindableField</param>
+        /// <param name="fields">Tablica pól z zadeklarowną dostępnością. Muszą dziedziczyć po klasie PathFindableField</param>
         /// <param name="start">Pole startowe</param>
         /// <param name="destination">Pole końcowe</param>
+        /// <seealso cref="PathFindableField"/>
         /// <returns>Najkrótsza ścieżka (stos)</returns>
         public static Stack<Vector2Int> FindPath(PathFindableField[][] fields, Vector2Int start, Vector2Int destination)
         {
-            var startField = new Node(start);
+            var startNode = new Node(start);
             var openSet = new FastPriorityQueue<Node>(fields.Length * fields[0].Length); // sprawdzić
             var closedSet = new List<Node>();
             var nodes = InitializeFieldsCache(fields);
 
-            AddToOpenSet(openSet, nodes, startField);
+            AddToOpenSet(openSet, nodes, startNode);
 
             while (openSet.Count > 0)
             {
-                var actualField = openSet.Dequeue();
+                var actualNode = openSet.Dequeue();
+                actualNode.isInOpenSet = false;//
 
                 // znaleziono ścieżkę
-                if (actualField.position == destination)
-                    return CombinePath(actualField, startField);
+                if (actualNode.position == destination)
+                    return CombinePath(actualNode, startNode);
 
-                closedSet.Add(actualField);
+                //closedSet.Add(actualField);
+                AddToClosedSet(closedSet, nodes, actualNode);
+                //actualField.isInClosedSet = true;
 
-                var neighbors = GetNeighbors(fields, nodes, actualField.position);
+                var neighbors = GetNeighbors(fields, nodes, actualNode.position);
 
                 foreach (var neighborPosition in neighbors)
                 {
@@ -44,28 +48,28 @@ namespace HexGameBoard
 
                     if (IsOnOpenSet(neighborPosition, nodes))
                     {
+                        var neighbor = nodes[neighborPosition.x][neighborPosition.y];
+                        var g = actualNode.g + 1;
+
+                        if (g < neighbor.g)
+                        {
+                            neighbor.parent = actualNode;
+                            neighbor.g = g;
+
+                            openSet.UpdatePriority(neighbor, neighbor.F);
+                        }
+                    }
+                    else
+                    {
                         var neighbor = new Node(neighborPosition)
                         {
-                            parent = actualField,
-                            g = actualField.g + 1,
+                            parent = actualNode,
+                            g = actualNode.g + 1,
                         };
 
                         neighbor.h = Heuristics(neighbor.position, destination);
 
                         AddToOpenSet(openSet, nodes, neighbor);
-                    }
-                    else
-                    {
-                        var neighbor = nodes[neighborPosition.x][neighborPosition.y];
-                        var g = actualField.g + 1;
-
-                        if (g < neighbor.g)
-                        {
-                            neighbor.parent = actualField;
-                            neighbor.g = g;
-
-                            openSet.UpdatePriority(neighbor, neighbor.F);
-                        }
                     }
                 }
             }
@@ -104,7 +108,7 @@ namespace HexGameBoard
         #endregion
 
         #region Get Distance
-
+        
         /// <summary>
         ///     Określa dystans pomiędzy dwoma polami (zdefiniowanymi we współrzędnych kartezjańskich 2D). Ignoruje przeszkody.
         /// </summary>
@@ -160,7 +164,8 @@ namespace HexGameBoard
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsOnOpenSet(Vector2Int nodePosition, Node[][] nodes)
         {
-            return nodes[nodePosition.x][nodePosition.y] == null || !nodes[nodePosition.x][nodePosition.y].isInOpenSet;
+            //return nodes[nodePosition.x][nodePosition.y] == null || !nodes[nodePosition.x][nodePosition.y].isInOpenSet;
+            return nodes[nodePosition.x][nodePosition.y]?.isInOpenSet ?? false;
         }
 
         /// <summary>
@@ -203,6 +208,20 @@ namespace HexGameBoard
             node.isInOpenSet = true;
             openSet.Enqueue(node, node.F);
             nodes[node.position.x][node.position.y] = node;
+        }
+
+        /// <summary>
+        ///     Dodaje węzeł do listy zamkniętej.
+        ///     Dodaje do tablicy węzłów.
+        /// </summary>
+        /// <param name="closedSet">Lista zamknięta</param>
+        /// <param name="nodes">Tablica węzłów</param>
+        /// <param name="node">Wybrany węzeł</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void AddToClosedSet(List<Node> closedSet, Node[][] nodes, Node node)
+        {
+            node.isInClosedSet = true;
+            closedSet.Add(node);
         }
 
         /// <summary>
