@@ -24,7 +24,7 @@ namespace HexGameBoard
         /// <summary>
         ///     Lista indeksów pól na które można przejść
         /// </summary>
-        internal List<Vector2Int> neighbors;
+        internal IEnumerable<Vector2Int> neighbors;
 
         /// <summary>
         ///     Określa, czy pole jest na zamkniętej liście algorytmu A*

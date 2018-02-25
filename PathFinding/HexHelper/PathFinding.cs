@@ -21,7 +21,7 @@ namespace HexGameBoard
         {
             var startNode = new Node(start);
             var openSet = new FastPriorityQueue<Node>(fields.Length * fields[0].Length); // sprawdzić
-            var closedSet = new List<Node>();
+            //var closedSet = new List<Node>();
             var nodes = InitializeFieldsCache(fields);
 
             AddToOpenSet(openSet, nodes, startNode);
@@ -36,7 +36,7 @@ namespace HexGameBoard
                     return CombinePath(actualNode, startNode);
 
                 //closedSet.Add(actualField);
-                AddToClosedSet(closedSet, nodes, actualNode);
+                AddToClosedSet(nodes, actualNode);
                 //actualField.isInClosedSet = true;
 
                 var neighbors = GetNeighbors(fields, nodes, actualNode.position);
@@ -189,7 +189,7 @@ namespace HexGameBoard
         /// <param name="nodePosition">Pozycja wybranego węzła</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static List<Vector2Int> GetNeighbors(PathFindableField[][] fields, Node[][] nodes, Vector2Int nodePosition)
+        private static IEnumerable<Vector2Int> GetNeighbors(PathFindableField[][] fields, Node[][] nodes, Vector2Int nodePosition)
         {
             return nodes[nodePosition.x][nodePosition.y]?.neighbors
                     ?? (nodes[nodePosition.x][nodePosition.y].neighbors = FindAvailableNeighbors(fields, nodePosition.x, nodePosition.y));
@@ -214,14 +214,13 @@ namespace HexGameBoard
         ///     Dodaje węzeł do listy zamkniętej.
         ///     Dodaje do tablicy węzłów.
         /// </summary>
-        /// <param name="closedSet">Lista zamknięta</param>
         /// <param name="nodes">Tablica węzłów</param>
         /// <param name="node">Wybrany węzeł</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void AddToClosedSet(List<Node> closedSet, Node[][] nodes, Node node)
+        private static void AddToClosedSet(Node[][] nodes, Node node)
         {
             node.isInClosedSet = true;
-            closedSet.Add(node);
+            //closedSet.Add(node);
         }
 
         /// <summary>
@@ -261,7 +260,7 @@ namespace HexGameBoard
         /// <param name="y">Pozycja Y</param>
         /// <returns>Lista dostępnych sąsiadów</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static List<Vector2Int> FindAvailableNeighbors(PathFindableField[][] fields, int x, int y)
+        private static IEnumerable<Vector2Int> FindAvailableNeighbors(PathFindableField[][] fields, int x, int y)
         {
             var neightbors = new List<Vector2Int>(2);
 
@@ -270,10 +269,9 @@ namespace HexGameBoard
                 var neighbor = IndexOfNeighbor(fields[x][y].position, (Direction)direction);
 
                 if (HasValidIndex(neighbor, fields) && fields[neighbor.x][neighbor.y].isAvailable)
-                    neightbors.Add(neighbor);
+                    yield return neighbor;
             }
 
-            return neightbors;
         }
 
         /// <summary>

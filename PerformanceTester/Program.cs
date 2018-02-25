@@ -16,12 +16,17 @@ namespace PerformanceTester
             var stopwatch = new Stopwatch();
             var size = new Vector2Int(100, 100);
             PathFindableField[][] fields = InitializeFields(size);
-            var repeats = 0;
+            var repeats = 1;
             var start = new Vector2Int(0, 0);
             var destination = new Vector2Int(size.x - 1, size.y - 1);
 
-            while(true)
-            {           
+            for (int i = 0; i < repeats; i++)
+            {
+                HexHelper.FindPath(fields, start, destination);
+            }
+
+            while (true)
+            {
                 string parameters = string.Empty;
 
                 do
@@ -34,8 +39,8 @@ namespace PerformanceTester
                     destination.x = size.x - 2;
                 else
                     destination.x = size.x - 1;
-                
-               
+
+
                 for (int i = 0; i < repeats; i++)
                 {
                     stopwatch.Start();
