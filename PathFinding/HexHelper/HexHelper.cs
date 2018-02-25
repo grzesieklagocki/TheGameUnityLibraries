@@ -33,8 +33,29 @@ namespace HexGameBoard
         ///     Offsety do obliczania indeksu pola sąsiada
         /// </summary>
         private static readonly Vector2Int[,] offsets;
+        private static readonly int[][][] offsets2 = new int[][][]
+            {
+                new int[][]
+                {
+                    new int[] {  0, -1 },
+                    new int[] {  0, -1 },
+                    new int[] {  1,  0 },
+                    new int[] {  0,  1 },
+                    new int[] { -1,  0 },
+                    new int[] { -1, -1 }
+                },
+                new int[][]
+                {
+                    new int[] {  0, -1 },
+                    new int[] {  1,  0 },
+                    new int[] {  1,  1 },
+                    new int[] {  0,  1 },
+                    new int[] { -1,  1 },
+                    new int[] { -1,  0 },
+                }
+            };
 
-        
+
         /// <summary>
         ///     Inicjalizacja offsetów
         /// </summary>
@@ -44,7 +65,7 @@ namespace HexGameBoard
             {
                 {
                     new Vector2Int( 0, -1),
-                    new Vector2Int( 1, -1),
+                    new Vector2Int( 0, -1),
                     new Vector2Int( 1,  0),
                     new Vector2Int( 0,  1),
                     new Vector2Int(-1,  0),
@@ -73,7 +94,9 @@ namespace HexGameBoard
         /// <returns>Pozycja sąsiedniego hexa</returns>
         public static Vector2Int IndexOfNeighbor(Vector2Int position, Direction direction)
         {
-            return position + offsets[Math.Abs(position.x % 2), (int)direction];
+            //return position + offsets[Math.Abs(position.x % 2), (int)direction];
+            var indexX = Math.Abs(position.x % 2);
+            return new Vector2Int(position.x + offsets2[indexX][(int)direction][0], position.y + offsets2[indexX][(int)direction][1]);
         }
 
         /// <summary>

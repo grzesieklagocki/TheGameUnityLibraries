@@ -52,7 +52,7 @@
     <Compile Include="Node.cs" />
     <Compile Include="HexHelper\HexHelper.cs" />
     <Compile Include="HexHelper\PathFinding.cs" />
-    <Compile Include="Field.cs" />
+    <Compile Include="PathFindableField.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

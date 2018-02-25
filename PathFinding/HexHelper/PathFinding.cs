@@ -1,6 +1,7 @@
 ﻿using Priority_Queue;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -16,13 +17,34 @@ namespace HexGameBoard
         /// <param name="start">Pole startowe</param>
         /// <param name="destination">Pole końcowe</param>
         /// <seealso cref="PathFindableField"/>
+        /// <exception cref="ArgumentNullException" />
+        /// <exception cref="ArgumentOutOfRangeException" />
         /// <returns>Najkrótsza ścieżka (stos)</returns>
         public static Stack<Vector2Int> FindPath(PathFindableField[][] fields, Vector2Int start, Vector2Int destination)
         {
-            var startNode = new Node(start);
-            var openSet = new FastPriorityQueue<Node>(fields.Length * fields[0].Length); // sprawdzić
-            //var closedSet = new List<Node>();
+            return FindPath(fields, start, destination, new Vector2Int(0, 0), new Vector2Int(fields.Length - 1, fields[0].Length - 1));
+        }
+
+        /// <summary>
+        ///     Wyszukuje najkrótszą ścieżkę pomiędzy dwoma polami.  
+        ///     Implementacja algorytmu A*.
+        /// </summary>
+        /// <param name="fields">Tablica pól z zadeklarowną dostępnością. Muszą dziedziczyć po klasie PathFindableField</param>
+        /// <param name="start">Pole startowe</param>
+        /// <param name="destination">Pole końcowe</param>
+        /// <param name="minIndexes">Minimalne indeksy pól branych pod uwagę przy wyznaczaniu ścieżki</param>
+        /// <param name="maxIndexes">Maksymalne indeksy pól branych pod uwagę przy wyznaczaniu ścieżki</param>
+        /// <seealso cref="PathFindableField"/>
+        /// <exception cref="ArgumentNullException" />
+        /// <exception cref="ArgumentOutOfRangeException" />
+        /// <returns>Najkrótsza ścieżka (stos)</returns>
+        public static Stack<Vector2Int> FindPath(PathFindableField[][] fields, Vector2Int start, Vector2Int destination, Vector2Int minIndexes, Vector2Int maxIndexes)
+        {
+            CheckArguments(fields, start, destination, minIndexes, maxIndexes);
+
             var nodes = InitializeFieldsCache(fields);
+            var openSet = new FastPriorityQueue<Node>(fields.Length * fields[0].Length); // sprawdzić
+            var startNode = new Node(start);
 
             AddToOpenSet(openSet, nodes, startNode);
 
@@ -35,11 +57,9 @@ namespace HexGameBoard
                 if (actualNode.position == destination)
                     return CombinePath(actualNode, startNode);
 
-                //closedSet.Add(actualField);
                 AddToClosedSet(nodes, actualNode);
-                //actualField.isInClosedSet = true;
 
-                var neighbors = GetNeighbors(fields, nodes, actualNode.position);
+                var neighbors = GetNeighbors(fields, nodes, actualNode.position, minIndexes, maxIndexes);
 
                 foreach (var neighborPosition in neighbors)
                 {
@@ -138,6 +158,29 @@ namespace HexGameBoard
         #region Helpers
 
         /// <summary>
+        ///     Wyrzuca ewentulne wyjątki związany z niepoprawnymi argumentami funkcji FindPath
+        /// </summary>
+        /// <param name="fields">Tablica pól z zadeklarowną dostępnością. Muszą dziedziczyć po klasie PathFindableField</param>
+        /// <param name="start">Pole startowe</param>
+        /// <param name="destination">Pole końcowe</param>
+        /// <param name="minIndexes">Minimalne indeksy pól branych pod uwagę przy wyznaczaniu ścieżki</param>
+        /// <param name="maxIndexes">Maksymalne indeksy pól branych pod uwagę przy wyznaczaniu ścieżki</param>
+        /// <exception cref="ArgumentNullException" />
+        /// <exception cref="ArgumentOutOfRangeException" />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void CheckArguments(PathFindableField[][] fields, Vector2Int start, Vector2Int destination, Vector2Int minIndexes, Vector2Int maxIndexes)
+        {
+            if (fields == null)
+                throw new ArgumentNullException($"Argument {nameof(fields)} = null.");
+
+            if (minIndexes.x < 0 || minIndexes.y < 0)
+                throw new ArgumentOutOfRangeException($"Argument {nameof(minIndexes)} przekracza indeks tablicy {nameof(fields)}.");
+
+            if (maxIndexes.x >= fields.Length || maxIndexes.y >= fields[0].Length)
+                throw new ArgumentOutOfRangeException($"Argument {nameof(maxIndexes)} przekracza indeks tablicy {nameof(fields)}.");
+        }
+
+        /// <summary>
         ///     Inicjalizuje tablicę do przechowywania węzłów
         /// </summary>
         /// <param name="fields">Tablica pól z zadeklarowną dostępnością</param>
@@ -187,12 +230,14 @@ namespace HexGameBoard
         /// <param name="fields">Tablica pól z zadeklarowną dostępnością</param>
         /// <param name="nodes">Tablica węzłów</param>
         /// <param name="nodePosition">Pozycja wybranego węzła</param>
+        /// <param name="minIndexes">Minimalne indeksy pól branych pod uwagę przy wyznaczaniu ścieżki</param>
+        /// <param name="maxIndexes">Maksymalne indeksy pól branych pod uwagę przy wyznaczaniu ścieżki</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static IEnumerable<Vector2Int> GetNeighbors(PathFindableField[][] fields, Node[][] nodes, Vector2Int nodePosition)
+        private static IEnumerable<Vector2Int> GetNeighbors(PathFindableField[][] fields, Node[][] nodes, Vector2Int nodePosition, Vector2Int minIndexes, Vector2Int maxIndexes)
         {
             return nodes[nodePosition.x][nodePosition.y]?.neighbors
-                    ?? (nodes[nodePosition.x][nodePosition.y].neighbors = FindAvailableNeighbors(fields, nodePosition.x, nodePosition.y));
+                    ?? (nodes[nodePosition.x][nodePosition.y].neighbors = FindAvailableNeighbors(fields, nodePosition.x, nodePosition.y, minIndexes, maxIndexes));
         }
 
         /// <summary>
@@ -258,17 +303,21 @@ namespace HexGameBoard
         /// <param name="fields">Tablica pól z zadeklarowną dostępnością</param>
         /// <param name="x">Pozycja X</param>
         /// <param name="y">Pozycja Y</param>
+        /// <param name="minIndexes">Minimalne indeksy pól branych pod uwagę przy wyznaczaniu ścieżki</param>
+        /// <param name="maxIndexes">Maksymalne indeksy pól branych pod uwagę przy wyznaczaniu ścieżki</param>
         /// <returns>Lista dostępnych sąsiadów</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static IEnumerable<Vector2Int> FindAvailableNeighbors(PathFindableField[][] fields, int x, int y)
+        private static IEnumerable<Vector2Int> FindAvailableNeighbors(PathFindableField[][] fields, int x, int y, Vector2Int minIndexes, Vector2Int maxIndexes)
         {
             var neightbors = new List<Vector2Int>(2);
 
             for (var direction = 0; direction < 6; direction++)
             {
-                var neighbor = IndexOfNeighbor(fields[x][y].position, (Direction)direction);
+                var indexX = Math.Abs(x % 2);
+                //var neighbor = IndexOfNeighbor(fields[x][y].position, (Direction)direction);
+                var neighbor = new Vector2Int(fields[x][y].position.x + offsets2[indexX][direction][0], fields[x][y].position.y + offsets2[indexX][direction][1]);
 
-                if (HasValidIndex(neighbor, fields) && fields[neighbor.x][neighbor.y].isAvailable)
+                if (HasValidIndex(neighbor, fields, minIndexes, maxIndexes) && fields[neighbor.x][neighbor.y].isAvailable)
                     yield return neighbor;
             }
 
@@ -279,14 +328,16 @@ namespace HexGameBoard
         /// </summary>
         /// <param name="index">Pozycja pola</param>
         /// <param name="fields">Tablica pól z zadeklarowną dostępnością</param>
+        /// <param name="minIndexes">Minimalne indeksy pól branych pod uwagę przy wyznaczaniu ścieżki</param>
+        /// <param name="maxIndexes">Maksymalne indeksy pól branych pod uwagę przy wyznaczaniu ścieżki</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool HasValidIndex(Vector2Int index, PathFindableField[][] fields)
+        private static bool HasValidIndex(Vector2Int index, PathFindableField[][] fields, Vector2Int minIndexes, Vector2Int maxIndexes)
         {
-            return index.x >= 0
-                && index.y >= 0
-                && index.x < fields.Length
-                && index.y < fields[0].Length; 
+            return index.x >= minIndexes.x
+                && index.y >= minIndexes.y
+                && index.x <= maxIndexes.x
+                && index.y <= maxIndexes.y; 
         }
 
         #endregion
