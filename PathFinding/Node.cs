@@ -11,6 +11,12 @@ namespace HexGameBoard
     /// </summary>
     internal class Node : FastPriorityQueueNode
     {
+        internal enum States
+        {
+            unexamined,
+            onOpenList,
+            onClosedList
+        }
         /// <summary>
         ///     Poprzednie pole aktualnej ścieżki
         /// </summary>
@@ -26,15 +32,7 @@ namespace HexGameBoard
         /// </summary>
         internal IEnumerable<Vector2Int> neighbors;
 
-        /// <summary>
-        ///     Określa, czy pole jest na zamkniętej liście algorytmu A*
-        /// </summary>
-        internal bool isInClosedSet = false;
-
-        /// <summary>
-        ///     Określa, czy pole jest na otwartej liście algorytmu A*
-        /// </summary>
-        internal bool isInOpenSet = false;
+        internal States state = 0;
 
         /// <summary>
         ///     Odległość od pola startowego

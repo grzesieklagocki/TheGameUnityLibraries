@@ -53,6 +53,7 @@
     <Compile Include="HexHelper\HexHelper.cs" />
     <Compile Include="HexHelper\PathFinding.cs" />
     <Compile Include="PathFindableField.cs" />
+    <Compile Include="PathFinder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

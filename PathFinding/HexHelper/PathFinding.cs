@@ -18,7 +18,6 @@ namespace HexGameBoard
         /// <param name="destination">Pole końcowe</param>
         /// <seealso cref="PathFindableField"/>
         /// <exception cref="ArgumentNullException" />
-        /// <exception cref="ArgumentOutOfRangeException" />
         /// <returns>Najkrótsza ścieżka (stos)</returns>
         public static Stack<Vector2Int> FindPath(PathFindableField[][] fields, Vector2Int start, Vector2Int destination)
         {
@@ -40,7 +39,9 @@ namespace HexGameBoard
         /// <returns>Najkrótsza ścieżka (stos)</returns>
         public static Stack<Vector2Int> FindPath(PathFindableField[][] fields, Vector2Int start, Vector2Int destination, Vector2Int minIndexes, Vector2Int maxIndexes)
         {
+#if DEBUG
             CheckArguments(fields, start, destination, minIndexes, maxIndexes);
+#endif
 
             var nodes = InitializeFieldsCache(fields);
             var openSet = new FastPriorityQueue<Node>(fields.Length * fields[0].Length); // sprawdzić
@@ -51,11 +52,10 @@ namespace HexGameBoard
             while (openSet.Count > 0)
             {
                 var actualNode = openSet.Dequeue();
-                actualNode.isInOpenSet = false;//
 
                 // znaleziono ścieżkę
                 if (actualNode.position == destination)
-                    return CombinePath(actualNode, startNode);
+                    return CombinePath(actualNode);
 
                 AddToClosedSet(nodes, actualNode);
 
@@ -128,7 +128,7 @@ namespace HexGameBoard
         #endregion
 
         #region Get Distance
-        
+
         /// <summary>
         ///     Określa dystans pomiędzy dwoma polami (zdefiniowanymi we współrzędnych kartezjańskich 2D). Ignoruje przeszkody.
         /// </summary>
@@ -207,8 +207,7 @@ namespace HexGameBoard
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsOnOpenSet(Vector2Int nodePosition, Node[][] nodes)
         {
-            //return nodes[nodePosition.x][nodePosition.y] == null || !nodes[nodePosition.x][nodePosition.y].isInOpenSet;
-            return nodes[nodePosition.x][nodePosition.y]?.isInOpenSet ?? false;
+            return nodes[nodePosition.x][nodePosition.y]?.state == Node.States.onOpenList;
         }
 
         /// <summary>
@@ -220,7 +219,7 @@ namespace HexGameBoard
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsOnClosedSet(Vector2Int nodePosition, Node[][] nodes)
         {
-            return nodes[nodePosition.x][nodePosition.y]?.isInClosedSet ?? false;
+            return nodes[nodePosition.x][nodePosition.y]?.state == Node.States.onClosedList;
         }
 
         /// <summary>
@@ -250,7 +249,7 @@ namespace HexGameBoard
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void AddToOpenSet(FastPriorityQueue<Node> openSet, Node[][] nodes, Node node)
         {
-            node.isInOpenSet = true;
+            node.state = Node.States.onOpenList;
             openSet.Enqueue(node, node.F);
             nodes[node.position.x][node.position.y] = node;
         }
@@ -264,8 +263,7 @@ namespace HexGameBoard
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void AddToClosedSet(Node[][] nodes, Node node)
         {
-            node.isInClosedSet = true;
-            //closedSet.Add(node);
+            node.state = Node.States.onClosedList;
         }
 
         /// <summary>
@@ -287,10 +285,10 @@ namespace HexGameBoard
         /// <param name="start">Węzeł końcowy</param>
         /// <returns>Stos</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Stack<Vector2Int> CombinePath(Node destination, Node start)
+        private static Stack<Vector2Int> CombinePath(Node destination)
         {
             var path = new Stack<Vector2Int>(1);
-            
+
             for (var node = destination; node != null; node = node.parent)
                 path.Push(node.position);
 
@@ -314,8 +312,7 @@ namespace HexGameBoard
             for (var direction = 0; direction < 6; direction++)
             {
                 var indexX = Math.Abs(x % 2);
-                //var neighbor = IndexOfNeighbor(fields[x][y].position, (Direction)direction);
-                var neighbor = new Vector2Int(fields[x][y].position.x + offsets2[indexX][direction][0], fields[x][y].position.y + offsets2[indexX][direction][1]);
+                var neighbor = new Vector2Int(fields[x][y].position.x + offsets[indexX][direction][0], fields[x][y].position.y + offsets[indexX][direction][1]);
 
                 if (HasValidIndex(neighbor, fields, minIndexes, maxIndexes) && fields[neighbor.x][neighbor.y].isAvailable)
                     yield return neighbor;
@@ -337,7 +334,7 @@ namespace HexGameBoard
             return index.x >= minIndexes.x
                 && index.y >= minIndexes.y
                 && index.x <= maxIndexes.x
-                && index.y <= maxIndexes.y; 
+                && index.y <= maxIndexes.y;
         }
 
         #endregion

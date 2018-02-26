@@ -13,17 +13,25 @@ namespace PerformanceTester
     {
         static void Main(string[] args)
         {
-            var stopwatch = new Stopwatch();
+            var stopwatch1 = new Stopwatch();
+            var stopwatch2 = new Stopwatch();
             var size = new Vector2Int(100, 100);
+
             PathFindableField[][] fields = InitializeFields(size);
+
+            var pathFinder = new PathFinder(fields);
+
             var repeats = 1;
+
             var start = new Vector2Int(0, 0);
             var destination = new Vector2Int(size.x - 1, size.y - 1);
 
-            for (int i = 0; i < repeats; i++)
-            {
-                HexHelper.FindPath(fields, start, destination);
-            }
+            Stack<Vector2Int> path1 = new Stack<Vector2Int>(), path2 = new Stack<Vector2Int>();
+
+            //for (int i = 0; i < repeats; i++)
+            //{
+            //    HexHelper.FindPath(fields, start, destination);
+            //}
 
             while (true)
             {
@@ -43,14 +51,19 @@ namespace PerformanceTester
 
                 for (int i = 0; i < repeats; i++)
                 {
-                    stopwatch.Start();
-                    HexHelper.FindPath(fields, start, destination);
-                    stopwatch.Stop();
+                    stopwatch1.Start();
+                    path1 = HexHelper.FindPath(fields, start, destination);
+                    stopwatch1.Stop();
+
+                    stopwatch2.Start();
+                    path2 = pathFinder.Find(start, destination);
+                    stopwatch2.Stop();
                 }
 
-                Console.WriteLine(stopwatch.ElapsedMilliseconds + "ms");
+                Console.WriteLine($"{stopwatch1.ElapsedMilliseconds} ({path1.Count}) / {stopwatch2.ElapsedMilliseconds} ({path2.Count}) [ms]");
 
-                stopwatch.Reset();
+                stopwatch1.Reset();
+                stopwatch2.Reset();
             }
         }
 

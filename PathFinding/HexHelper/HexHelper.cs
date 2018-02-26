@@ -32,13 +32,13 @@ namespace HexGameBoard
         /// <summary>
         ///     Offsety do obliczania indeksu pola sąsiada
         /// </summary>
-        private static readonly Vector2Int[,] offsets;
-        private static readonly int[][][] offsets2 = new int[][][]
+        //private static readonly Vector2Int[,] offsets;
+        protected static readonly int[][][] offsets = new int[][][]
             {
                 new int[][]
                 {
                     new int[] {  0, -1 },
-                    new int[] {  0, -1 },
+                    new int[] {  1, -1 },
                     new int[] {  1,  0 },
                     new int[] {  0,  1 },
                     new int[] { -1,  0 },
@@ -56,35 +56,6 @@ namespace HexGameBoard
             };
 
 
-        /// <summary>
-        ///     Inicjalizacja offsetów
-        /// </summary>
-        static HexHelper()
-        {
-            offsets = new Vector2Int[,]
-            {
-                {
-                    new Vector2Int( 0, -1),
-                    new Vector2Int( 0, -1),
-                    new Vector2Int( 1,  0),
-                    new Vector2Int( 0,  1),
-                    new Vector2Int(-1,  0),
-                    new Vector2Int(-1, -1)
-                },
-                {
-                    new Vector2Int( 0, -1),
-                    new Vector2Int( 1,  0),
-                    new Vector2Int( 1,  1),
-                    new Vector2Int( 0,  1),
-                    new Vector2Int(-1,  1),
-                    new Vector2Int(-1,  0)
-                }
-            };
-        }
-
-
-
-
 
         /// <summary>
         ///     Podaje koordynaty wybranego, sąsiedniego hexa
@@ -94,9 +65,14 @@ namespace HexGameBoard
         /// <returns>Pozycja sąsiedniego hexa</returns>
         public static Vector2Int IndexOfNeighbor(Vector2Int position, Direction direction)
         {
-            //return position + offsets[Math.Abs(position.x % 2), (int)direction];
-            var indexX = Math.Abs(position.x % 2);
-            return new Vector2Int(position.x + offsets2[indexX][(int)direction][0], position.y + offsets2[indexX][(int)direction][1]);
+            return IndexOfNeighbor(position.x, position.y, direction);
+        }
+
+        public static Vector2Int IndexOfNeighbor(int parentX, int parentY, Direction direction)
+        {
+            var indexX = Math.Abs(parentX % 2);
+
+            return new Vector2Int(parentX + offsets[indexX][(int)direction][0], parentY + offsets[indexX][(int)direction][1]);
         }
 
         /// <summary>
