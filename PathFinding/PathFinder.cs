@@ -63,12 +63,12 @@ namespace HexGameBoard
 
         public Stack<Vector2Int> Find(Vector2Int start, Vector2Int destination)
         {
+
             var openSet = new FastPriorityQueue<Node>(sizeX * sizeY);
             var startNode = nodes[start.x][start.y];
 
             AddToOpenSet(openSet, startNode);
-
-            ResetNodes();
+            ResetNodes(startNode);
 
             while (openSet.Count > 0)
             {
@@ -78,36 +78,34 @@ namespace HexGameBoard
                 if (actualNode.position == destination)
                     return CombinePath(actualNode);
 
-                actualNode.state = States.onClosedList;
+                actualNode.state = States.inClosedSet;
 
                 foreach (var neighbor in actualNode.neighbors)
+                //Parallel.ForEach(actualNode.neighbors, neighbor =>
                 {
-                    if (neighbor == null || neighbor.state == States.onClosedList)
+                    if (neighbor == null || neighbor.state == States.inClosedSet)
                         continue;
 
-                    if (neighbor.state == States.onOpenList)
-                    {
-                        var g = actualNode.g + 1;
+                    var g = actualNode.g + 1;
 
-                        if (g < neighbor.g)
-                        {
-                            neighbor.parent = actualNode;
-                            neighbor.g = g;
-
-                            openSet.UpdatePriority(neighbor, neighbor.F);
-                        }
-                    }
-                    else
+                    if (neighbor.state == States.unexamined)
                     {
                         neighbor.parent = actualNode;
-                        neighbor.g = actualNode.g + 1;
+                        neighbor.g = g;
                         neighbor.h = GetDistance(neighbor.position, destination);
 
                         AddToOpenSet(openSet, neighbor);
                     }
-                }
-            }
+                    else if (g < neighbor.g) // && neighbor.state == States.unexamined
+                    {
+                        neighbor.parent = actualNode;
+                        neighbor.g = g;
 
+                        openSet.UpdatePriority(neighbor, neighbor.F);
+                    }
+                }/*);*/
+            }
+            
             return new Stack<Vector2Int>();
         }
 
@@ -173,8 +171,10 @@ namespace HexGameBoard
         #region Find Helpers
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ResetNodes()
+        private void ResetNodes(Node startNode)
         {
+            startNode.g = 0;
+
             for (int x = 0; x < sizeX; x++)
                 for (int y = 0; y < sizeY; y++)
                 {
@@ -202,7 +202,7 @@ namespace HexGameBoard
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AddToOpenSet(FastPriorityQueue<Node> openSet, Node node)
         {
-            node.state = States.onOpenList;
+            node.state = States.inOpenSet;
             openSet.Enqueue(node, node.F);
         }
 
@@ -243,7 +243,8 @@ namespace HexGameBoard
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Stack<Vector2Int> CombinePath(Node destination)
         {
-            var path = new Stack<Vector2Int>(1);
+            var path = new Stack<Vector2Int>((int)destination.g + 1);
+            //var path = new Stack<Vector2Int>(1);
 
             for (var node = destination; node != null; node = node.parent)
                 path.Push(node.position);

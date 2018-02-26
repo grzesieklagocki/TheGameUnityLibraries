@@ -1,5 +1,4 @@
 ﻿using Priority_Queue;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace HexGameBoard
@@ -14,8 +13,8 @@ namespace HexGameBoard
         internal enum States
         {
             unexamined,
-            onOpenList,
-            onClosedList
+            inOpenSet,
+            inClosedSet
         }
         /// <summary>
         ///     Poprzednie pole aktualnej ścieżki
