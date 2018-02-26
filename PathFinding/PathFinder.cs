@@ -61,9 +61,16 @@ namespace HexGameBoard
             FillNodesWithNeighbors();
         }
 
+        /// <summary>
+        ///     Wyszukuje najkrótszą ścieżkę pomiędzy dwoma polami.  
+        ///     Implementacja algorytmu A*.
+        /// </summary>
+        /// <param name="start">Pole startowe</param>
+        /// <param name="destination">Pole końcowe</param>
+        /// <seealso cref="PathFindableField"/>
+        /// <returns>Najkrótsza ścieżka (stos)</returns>
         public Stack<Vector2Int> Find(Vector2Int start, Vector2Int destination)
         {
-
             var openSet = new FastPriorityQueue<Node>(sizeX * sizeY);
             var startNode = nodes[start.x][start.y];
 
@@ -92,7 +99,7 @@ namespace HexGameBoard
                     {
                         neighbor.parent = actualNode;
                         neighbor.g = g;
-                        neighbor.h = GetDistance(neighbor.position, destination);
+                        neighbor.h = HexHelper.GetDistance(neighbor.position, destination);
 
                         AddToOpenSet(openSet, neighbor);
                     }
@@ -204,40 +211,6 @@ namespace HexGameBoard
         {
             node.state = States.inOpenSet;
             openSet.Enqueue(node, node.F);
-        }
-
-        /// <summary>
-        ///     Określa dystans pomiędzy dwoma polami (zdefiniowanymi we współrzędnych kartezjańskich 2D). Ignoruje przeszkody.
-        /// </summary>
-        /// <param name="a">Pierwsze pole (współrzędne kartezjańskie 2D)</param>
-        /// <param name="b">Drugie pole (współrzędne kartezjańskie 2D)</param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetDistance(Vector2Int a, Vector2Int b)
-        {
-            return GetDistance(AxialToCubeCoordinates(a), AxialToCubeCoordinates(b));
-        }
-
-        /// <summary>
-        ///     Określa dystans pomiędzy dwoma polami (zdefiniowanymi we współrzędnych mapowania sześniennego). Ignoruje przeszkody.
-        /// </summary>
-        /// <param name="a">Pierwsze pole (współrzędne mapowania sześciennego)</param>
-        /// <param name="b">Drugie pole (współrzędne mapowania sześciennego)</param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetDistance(Vector3Int a, Vector3Int b)
-        {
-            return Math.Max(Math.Abs(a.x - b.x), Math.Max(Math.Abs(a.y - b.y), Math.Abs(a.z - b.z)));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector3Int AxialToCubeCoordinates(Vector2Int axialCoordinates)
-        {
-            var x = axialCoordinates.x;
-            var z = axialCoordinates.y - (axialCoordinates.x - (axialCoordinates.x & 1)) / 2;
-            var y = -x - z;
-
-            return new Vector3Int(x, y, z);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

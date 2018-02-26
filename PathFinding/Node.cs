@@ -10,12 +10,19 @@ namespace HexGameBoard
     /// </summary>
     internal class Node : FastPriorityQueueNode
     {
+        /// <summary>
+        ///     Stany, w których może znajdować się węzeł w trakcie rozpatrywania przez algorytm A*
+        /// </summary>
         internal enum States
         {
+            /// <summary>niesprawdzony</summary>
             unexamined,
+            /// <summary>na liście otwarter</summary>
             inOpenSet,
+            /// <summary>na liście zamkniętej</summary>
             inClosedSet
         }
+
         /// <summary>
         ///     Poprzednie pole aktualnej ścieżki
         /// </summary>
@@ -31,6 +38,9 @@ namespace HexGameBoard
         /// </summary>
         internal Node[] neighbors;
 
+        /// <summary>
+        ///     Aktualny stan, w którym jest węzeł w trakcie rozpatrywania przez algorytm A*
+        /// </summary>
         internal States state = 0;
 
         /// <summary>
@@ -42,6 +52,7 @@ namespace HexGameBoard
         ///     Szacowana odległość do celu
         /// </summary>
         internal float h = 0;
+
 
         /// <summary>
         ///     Szacowana długość ścieżki

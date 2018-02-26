@@ -68,6 +68,13 @@ namespace HexGameBoard
             return IndexOfNeighbor(position.x, position.y, direction);
         }
 
+        /// <summary>
+        ///     Podaje koordynaty wybranego, sąsiedniego hexa
+        /// </summary>
+        /// <param name="parentX">Pozycja X bazowego hexa</param>
+        /// <param name="parentY">Pozycja Y bazowego hexa</param>
+        /// <param name="direction">Kierunek sąsiedniego hexa względem bazowego</param>
+        /// <returns></returns>
         public static Vector2Int IndexOfNeighbor(int parentX, int parentY, Direction direction)
         {
             var indexX = Math.Abs(parentX & 1);
@@ -123,16 +130,67 @@ namespace HexGameBoard
 
             return fields;
         }
-        
+
+        /// <summary>
+        ///     Określa dystans pomiędzy dwoma polami (zdefiniowanymi we współrzędnych kartezjańskich 2D). Ignoruje przeszkody.
+        /// </summary>
+        /// <param name="a">Pierwsze pole (współrzędne kartezjańskie 2D)</param>
+        /// <param name="b">Drugie pole (współrzędne kartezjańskie 2D)</param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetDistance(Vector2Int a, Vector2Int b)
+        {
+            return GetDistance(AxialToCubeCoordinates(a), AxialToCubeCoordinates(b));
+        }
+
+        /// <summary>
+        ///     Określa dystans pomiędzy dwoma polami (zdefiniowanymi we współrzędnych mapowania sześniennego). Ignoruje przeszkody.
+        /// </summary>
+        /// <param name="a">Pierwsze pole (współrzędne mapowania sześciennego)</param>
+        /// <param name="b">Drugie pole (współrzędne mapowania sześciennego)</param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetDistance(Vector3Int a, Vector3Int b)
+        {
+            return Math.Max(Math.Abs(a.x - b.x), Math.Max(Math.Abs(a.y - b.y), Math.Abs(a.z - b.z)));
+        }
 
 
         /// <summary>
-        ///     Zwraca listę wszystkich hexów będacych na określonej warstwie. Funkcja pomonicza dla FieldsInRange().
+        ///     Konwertuje współrzędne kartezjańskie 2D na współrzędne mapowania sześciennego.
         /// </summary>
-        /// <param name="field">Pole leżace w lewym dolnym rogu okręgu</param>
-        /// <param name="layer">Numer warstwy</param>
-        /// <returns>Lista pól</returns>
+        /// <param name="axialCoordinates">Współrzędne kartezjańskie 2D</param>
+        /// <returns>Współrzędne mapowania sześciennego</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector3Int AxialToCubeCoordinates(Vector2Int axialCoordinates)
+        {
+            var x = axialCoordinates.x;
+            var z = axialCoordinates.y - (axialCoordinates.x - (axialCoordinates.x & 1)) / 2;
+            var y = -x - z;
+
+            return new Vector3Int(x, y, z);
+        }
+
+        /// <summary>
+        ///     Konwertuje współrzędne mapowania sześciennego na współrzędne kartezjańskie 2D.
+        /// </summary>
+        /// <param name="cubeCoordinates">Współrzędne mapowania sześciennego</param>
+        /// <returns>Współrzędne kartezjańskie 2D</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2Int CubeToAxialCoordinates(Vector3Int cubeCoordinates)
+        {
+
+            return new Vector2Int(cubeCoordinates.x, cubeCoordinates.z + (cubeCoordinates.x - (cubeCoordinates.x & 1)) / 2);
+        }
+
+
+/// <summary>
+///     Zwraca listę wszystkich hexów będacych na określonej warstwie. Funkcja pomonicza dla FieldsInRange().
+/// </summary>
+/// <param name="field">Pole leżace w lewym dolnym rogu okręgu</param>
+/// <param name="layer">Numer warstwy</param>
+/// <returns>Lista pól</returns>
+[MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static List<Vector2Int> GetHexRing(Vector2Int field, int layer)
         {
             var fields = new List<Vector2Int>();
