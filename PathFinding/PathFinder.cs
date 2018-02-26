@@ -65,26 +65,24 @@ namespace HexGameBoard
         {
             var openSet = new FastPriorityQueue<Node>(sizeX * sizeY);
             var startNode = nodes[start.x][start.y];
-            Node actualNode;
+
             AddToOpenSet(openSet, startNode);
 
             ResetNodes();
 
             while (openSet.Count > 0)
             {
-                actualNode = openSet.Dequeue();
+                var actualNode = openSet.Dequeue();
 
                 // znaleziono ścieżkę
                 if (actualNode.position == destination)
                     return CombinePath(actualNode);
 
-                actualNode.state = Node.States.onClosedList;
+                actualNode.state = States.onClosedList;
 
-                foreach (var neighborPosition in actualNode.neighbors)
+                foreach (var neighbor in actualNode.neighbors)
                 {
-                    var neighbor = nodes[neighborPosition.x][neighborPosition.y];
-
-                    if (neighbor.state == States.onClosedList)
+                    if (neighbor == null || neighbor.state == States.onClosedList)
                         continue;
 
                     if (neighbor.state == States.onOpenList)
@@ -139,27 +137,27 @@ namespace HexGameBoard
                     nodes[x][y].neighbors = FindAvailableNeighbors(x, y);
         }
 
-        private List<Vector2Int> FindAvailableNeighbors(int x, int y)
+        private Node[] FindAvailableNeighbors(int x, int y)
         {
-            var neighbors = new List<Vector2Int>(2);
+            var neighbors = new Node[6];
 
-            //for (var direction = 0; direction < 6; direction++)
+            for (var direction = 0; direction < 6; direction++)
+            {
+                var neighborPosition = IndexOfNeighbor(x, y, (Direction)direction);
+
+                if (HasValidIndex(neighborPosition.x, neighborPosition.y) && nodes[neighborPosition.x][neighborPosition.y] != null)
+                    neighbors[direction] = nodes[neighborPosition.x][neighborPosition.y];
+                //yield return neighbor;
+            }
+            //Parallel.For(0, 6, direction =>
             //{
-            //    var neighbor = HexHelper.IndexOfNeighbor(x, y, (HexHelper.Direction)direction);
+            //    var neighbor = IndexOfNeighbor(x, y, (Direction)direction);
 
             //    if (HasValidIndex(neighbor.x, neighbor.y) && nodes[neighbor.x][neighbor.y] != null)
-            //        neightbors.Add(neighbor);
+            //        lock(neighbors)
+            //            neighbors.Add(neighbor);
             //    //yield return neighbor;
-            //}
-            Parallel.For(0, 6, direction =>
-            {
-                var neighbor = IndexOfNeighbor(x, y, (Direction)direction);
-
-                if (HasValidIndex(neighbor.x, neighbor.y) && nodes[neighbor.x][neighbor.y] != null)
-                    lock(neighbors)
-                        neighbors.Add(neighbor);
-                //yield return neighbor;
-            });
+            //});
 
             return neighbors;
         }
@@ -184,8 +182,6 @@ namespace HexGameBoard
                     if (nodes[x][y] == null)
                         continue;
 
-                    //nodes[x][y].isInClosedSet = false;
-                    //nodes[x][y].isInOpenSet = false;
                     nodes[x][y].state = States.unexamined;
                 }
 

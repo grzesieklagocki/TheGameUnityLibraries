@@ -70,7 +70,7 @@ namespace HexGameBoard
 
         public static Vector2Int IndexOfNeighbor(int parentX, int parentY, Direction direction)
         {
-            var indexX = Math.Abs(parentX % 2);
+            var indexX = Math.Abs(parentX & 1);
 
             return new Vector2Int(parentX + offsets[indexX][(int)direction][0], parentY + offsets[indexX][(int)direction][1]);
         }

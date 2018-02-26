@@ -52,7 +52,7 @@ namespace PerformanceTester
                 for (int i = 0; i < repeats; i++)
                 {
                     stopwatch1.Start();
-                    path1 = HexHelper.FindPath(fields, start, destination);
+                    //path1 = HexHelper.FindPath(fields, start, destination);
                     stopwatch1.Stop();
 
                     stopwatch2.Start();
