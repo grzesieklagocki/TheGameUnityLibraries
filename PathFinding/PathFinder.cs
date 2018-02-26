@@ -1,8 +1,6 @@
 ﻿using Priority_Queue;
-using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using UnityEngine;
 using static HexGameBoard.HexHelper;
 using static HexGameBoard.Node;
@@ -17,29 +15,24 @@ namespace HexGameBoard
         /// <summary>
         ///     Rozmiar Y tablicy przechowującej szablon planszy
         /// </summary>
-        public int SizeX
-        {
-            get { return sizeX; }
-        }
+        public int SizeX { get { return sizeX; } }
 
         /// <summary>
         ///     Rozmiar Y tablicy przechowującej szablon planszy
         /// </summary>
-        public int SizeY
-        {
-            get { return sizeY; }
-        }
+        public int SizeY { get { return sizeY; } }
+
 
         private Node[][] nodes;
         private int sizeX, sizeY;
 
 
         #region Contructors
-        
+
         /// <summary>
-        ///     
+        ///     Inicjalizuje nową instancję podanym szablonem planszy
         /// </summary>
-        /// <param name="fieldsTemplate"></param>
+        /// <param name="fieldsTemplate">Szablon planszy</param>
         public PathFinder(PathFindableField[][] fieldsTemplate)
         {
             Initialize(fieldsTemplate);
@@ -48,9 +41,9 @@ namespace HexGameBoard
         #endregion
 
         /// <summary>
-        ///     
+        ///     Inicjalizuje planszę polami
         /// </summary>
-        /// <param name="fieldsTemplate"></param>
+        /// <param name="fieldsTemplate">Szablon planszy</param>
         public void Initialize(PathFindableField[][] fieldsTemplate)
         {
             sizeX = fieldsTemplate.Length;
@@ -60,6 +53,8 @@ namespace HexGameBoard
             FillArrayWithNodes(fieldsTemplate);
             FillNodesWithNeighbors();
         }
+        
+        #region Find
 
         /// <summary>
         ///     Wyszukuje najkrótszą ścieżkę pomiędzy dwoma polami.  
@@ -71,11 +66,26 @@ namespace HexGameBoard
         /// <returns>Najkrótsza ścieżka (stos)</returns>
         public Stack<Vector2Int> Find(Vector2Int start, Vector2Int destination)
         {
+            return Find(start, destination, new Vector2Int[0]);
+        }
+
+        /// <summary>
+        ///     Wyszukuje najkrótszą ścieżkę pomiędzy dwoma polami.  
+        ///     Implementacja algorytmu A*.
+        /// </summary>
+        /// <param name="start">Pole startowe</param>
+        /// <param name="destination">Pole końcowe</param>
+        /// <param name="temporaryObstacles">Pozycje tymczasowych przeszkód (niepodanych przy inicjalizacji)</param>
+        /// <seealso cref="PathFindableField"/>
+        /// <returns>Najkrótsza ścieżka (stos)</returns>
+        public Stack<Vector2Int> Find(Vector2Int start, Vector2Int destination, IEnumerable<Vector2Int> temporaryObstacles)
+        {
             var openSet = new FastPriorityQueue<Node>(sizeX * sizeY);
             var startNode = nodes[start.x][start.y];
 
             AddToOpenSet(openSet, startNode);
             ResetNodes(startNode);
+            SetFields(temporaryObstacles, true);
 
             while (openSet.Count > 0)
             {
@@ -83,19 +93,22 @@ namespace HexGameBoard
 
                 // znaleziono ścieżkę
                 if (actualNode.position == destination)
+                {
+                    SetFields(temporaryObstacles, false);
                     return CombinePath(actualNode);
+                }                  
 
-                actualNode.state = States.inClosedSet;
+                actualNode.state = States.InClosedSet;
 
                 foreach (var neighbor in actualNode.neighbors)
                 //Parallel.ForEach(actualNode.neighbors, neighbor =>
                 {
-                    if (neighbor == null || neighbor.state == States.inClosedSet)
+                    if (neighbor == null || neighbor.state == States.InClosedSet)
                         continue;
 
                     var g = actualNode.g + 1;
 
-                    if (neighbor.state == States.unexamined)
+                    if (neighbor.state == States.Unexamined)
                     {
                         neighbor.parent = actualNode;
                         neighbor.g = g;
@@ -112,9 +125,12 @@ namespace HexGameBoard
                     }
                 }/*);*/
             }
-            
+
+            SetFields(temporaryObstacles, false);
             return new Stack<Vector2Int>();
         }
+
+        #endregion
 
         #region Initialization Helpers
 
@@ -152,19 +168,51 @@ namespace HexGameBoard
 
                 if (HasValidIndex(neighborPosition.x, neighborPosition.y) && nodes[neighborPosition.x][neighborPosition.y] != null)
                     neighbors[direction] = nodes[neighborPosition.x][neighborPosition.y];
-                //yield return neighbor;
             }
-            //Parallel.For(0, 6, direction =>
-            //{
-            //    var neighbor = IndexOfNeighbor(x, y, (Direction)direction);
-
-            //    if (HasValidIndex(neighbor.x, neighbor.y) && nodes[neighbor.x][neighbor.y] != null)
-            //        lock(neighbors)
-            //            neighbors.Add(neighbor);
-            //    //yield return neighbor;
-            //});
 
             return neighbors;
+        }
+
+
+        /// <summary>
+        ///     Ustawia pole i aktualizuje relacje z sąsiednimi polami
+        /// </summary>
+        /// <param name="position">Pozycja pola (indeks w tablicy)</param>
+        /// <param name="isAvailable"></param>
+        public void SetField(Vector2Int position, bool isAvailable)
+        {
+            SetField(position.x, position.y, isAvailable);
+        }
+
+        /// <summary>
+        ///     Aktywuje/dezaktywuje podane pole i aktualizuje relacje z jego sąsiednimi polami
+        /// </summary>
+        /// <param name="x">Pozycja X pola (indeks w tablicy)</param>
+        /// <param name="y">Pozycja Y pola (indeks w tablicy)</param>
+        /// <param name="isAvailable">Określa, czy pole ma zostać aktywowane czy dezaktywowane</param>
+        public void SetField(int x, int y, bool isAvailable)
+        {
+            var node = nodes[x][y] = isAvailable ? new Node(x, y) : null;
+            var neighbors = FindAvailableNeighbors(x, y);
+
+            if (isAvailable)
+                node.neighbors = neighbors;
+
+            for (int i = 0; i < 6; i++)
+                if (neighbors[i] != null)
+                    neighbors[i].neighbors[(i + 3) % 6] = node;
+
+        }
+
+        /// <summary>
+        ///     Aktywuje/dezaktywuje wszystkie pola z dostarczonej kolekcji i aktualizuje relacje z ich sąsiednimi polami
+        /// </summary>
+        /// <param name="positions">Pozycje pól (indeksy tablicy) do ustawienia</param>
+        /// <param name="isAvailable"></param>
+        public void SetFields(IEnumerable<Vector2Int> positions, bool isAvailable)
+        {
+            foreach (var position in positions)
+                SetField(position, isAvailable);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -189,7 +237,7 @@ namespace HexGameBoard
                     if (nodes[x][y] == null)
                         continue;
 
-                    nodes[x][y].state = States.unexamined;
+                    nodes[x][y].state = States.Unexamined;
                 }
 
             //Parallel.For(0, sizeX, x =>
@@ -209,7 +257,7 @@ namespace HexGameBoard
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AddToOpenSet(FastPriorityQueue<Node> openSet, Node node)
         {
-            node.state = States.inOpenSet;
+            node.state = States.InOpenSet;
             openSet.Enqueue(node, node.F);
         }
 

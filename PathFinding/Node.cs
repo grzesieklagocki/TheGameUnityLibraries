@@ -4,9 +4,9 @@ using UnityEngine;
 namespace HexGameBoard
 {
     /// <summary>
-    ///     Pole (węzeł) ścieżki dla algorytmu A*.
-    /// Współpracuje z FastPriorityQueue:
-    /// https://github.com/BlueRaja/High-Speed-Priority-Queue-for-C-Sharp
+    ///     Węzeł ścieżki dla algorytmu A*.
+    ///     Współpracuje z FastPriorityQueue:
+    ///     https://github.com/BlueRaja/High-Speed-Priority-Queue-for-C-Sharp
     /// </summary>
     internal class Node : FastPriorityQueueNode
     {
@@ -15,12 +15,12 @@ namespace HexGameBoard
         /// </summary>
         internal enum States
         {
-            /// <summary>niesprawdzony</summary>
-            unexamined,
-            /// <summary>na liście otwarter</summary>
-            inOpenSet,
-            /// <summary>na liście zamkniętej</summary>
-            inClosedSet
+            /// <summary>Niesprawdzony</summary>
+            Unexamined,
+            /// <summary>Na liście otwartej</summary>
+            InOpenSet,
+            /// <summary>Na liście zamkniętej</summary>
+            InClosedSet
         }
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace HexGameBoard
         ///     Lista indeksów pól na które można przejść
         /// </summary>
         internal Node[] neighbors;
-
+        
         /// <summary>
         ///     Aktualny stan, w którym jest węzeł w trakcie rozpatrywania przez algorytm A*
         /// </summary>
@@ -73,6 +73,17 @@ namespace HexGameBoard
         internal Node(Vector2Int position)
         {
             this.position = position;
+        }
+
+        /// <summary>
+        ///     Inicjalizuje nową instację pola
+        /// </summary>
+        /// <param name="x">Index X pola (pozycja w tablicy)</param>
+        /// <param name="y">Index Y pola (pozycja w tablicy)</param>
+        internal Node(int x, int y) : 
+            this(new Vector2Int(x, y))
+        {
+
         }
     }
 }

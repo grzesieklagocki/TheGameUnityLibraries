@@ -16,17 +16,17 @@ namespace HexGameBoard
         public enum Direction
         {
             /// <summary>Powyżej</summary>
-            up,
+            Up,
             /// <summary>W prawym górnym rogu</summary>
-            upperRight,
+            UpperRight,
             /// <summary>W prawym dolnym rogu</summary>
-            lowerRight,
+            LowerRight,
             /// <summary>Poniżej</summary>
-            bottom,
+            Bottom,
             /// <summary>W lewym dolnym rogu</summary>
-            lowerLeft,
+            LowerLeft,
             /// <summary>W lewym górnym rogu</summary>
-            upperLeft
+            UpperLeft
         }
 
         /// <summary>
@@ -122,7 +122,7 @@ namespace HexGameBoard
 
             for (int layer = 1; layer <= outerRadius; layer++)
             {
-                field = IndexOfNeighbor(field, Direction.lowerLeft);
+                field = IndexOfNeighbor(field, Direction.LowerLeft);
 
                 if (layer >= innerRadius)
                     fields.AddRange(GetHexRing(field, layer));
@@ -179,18 +179,17 @@ namespace HexGameBoard
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2Int CubeToAxialCoordinates(Vector3Int cubeCoordinates)
         {
-
             return new Vector2Int(cubeCoordinates.x, cubeCoordinates.z + (cubeCoordinates.x - (cubeCoordinates.x & 1)) / 2);
         }
 
 
-/// <summary>
-///     Zwraca listę wszystkich hexów będacych na określonej warstwie. Funkcja pomonicza dla FieldsInRange().
-/// </summary>
-/// <param name="field">Pole leżace w lewym dolnym rogu okręgu</param>
-/// <param name="layer">Numer warstwy</param>
-/// <returns>Lista pól</returns>
-[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        /// <summary>
+        ///     Zwraca listę wszystkich hexów będacych na określonej warstwie. Funkcja pomonicza dla FieldsInRange().
+        /// </summary>
+        /// <param name="field">Pole leżace w lewym dolnym rogu okręgu</param>
+        /// <param name="layer">Numer warstwy</param>
+        /// <returns>Lista pól</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static List<Vector2Int> GetHexRing(Vector2Int field, int layer)
         {
             var fields = new List<Vector2Int>();

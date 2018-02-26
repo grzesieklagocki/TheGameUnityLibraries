@@ -207,7 +207,7 @@
 //        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 //        private static bool IsOnOpenSet(Vector2Int nodePosition, Node[][] nodes)
 //        {
-//            return nodes[nodePosition.x][nodePosition.y]?.state == Node.States.onOpenList;
+//            return nodes[nodePosition.x][nodePosition.y]?.state == Node.States.inOpenSet;
 //        }
 
 //        /// <summary>
@@ -219,7 +219,7 @@
 //        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 //        private static bool IsOnClosedSet(Vector2Int nodePosition, Node[][] nodes)
 //        {
-//            return nodes[nodePosition.x][nodePosition.y]?.state == Node.States.onClosedList;
+//            return nodes[nodePosition.x][nodePosition.y]?.state == Node.States.inClosedSet;
 //        }
 
 //        /// <summary>
@@ -249,7 +249,7 @@
 //        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 //        private static void AddToOpenSet(FastPriorityQueue<Node> openSet, Node[][] nodes, Node node)
 //        {
-//            node.state = Node.States.onOpenList;
+//            node.state = Node.States.inOpenSet;
 //            openSet.Enqueue(node, node.F);
 //            nodes[node.position.x][node.position.y] = node;
 //        }
@@ -263,7 +263,7 @@
 //        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 //        private static void AddToClosedSet(Node[][] nodes, Node node)
 //        {
-//            node.state = Node.States.onClosedList;
+//            node.state = Node.States.inClosedSet;
 //        }
 
 //        /// <summary>

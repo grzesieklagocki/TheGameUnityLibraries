@@ -56,8 +56,8 @@ namespace PerformanceTester
                     //stopwatch1.Stop();
 
                     stopwatch2.Start();
-                    //path2 = pathFinder.Find(start, destination);
-                    pathFinder.Find(start, destination);
+                    path2 = pathFinder.Find(start, destination);
+                    //pathFinder.Find(start, destination);
                     stopwatch2.Stop();
                 }
 
