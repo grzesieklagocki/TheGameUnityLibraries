@@ -1,9 +1,10 @@
-﻿using Priority_Queue;
+﻿using HexGameBoard.Nodes;
+using Priority_Queue;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using static HexGameBoard.HexHelper;
-using static HexGameBoard.Node;
+using static HexGameBoard.Nodes.Node;
 
 namespace HexGameBoard
 {
@@ -112,7 +113,7 @@ namespace HexGameBoard
                     {
                         neighbor.parent = actualNode;
                         neighbor.g = g;
-                        neighbor.h = HexHelper.GetDistance(neighbor.position, destination);
+                        neighbor.h = GetDistance(neighbor.position, destination);
 
                         AddToOpenSet(openSet, neighbor);
                     }
@@ -189,7 +190,7 @@ namespace HexGameBoard
         /// </summary>
         /// <param name="x">Pozycja X pola (indeks w tablicy)</param>
         /// <param name="y">Pozycja Y pola (indeks w tablicy)</param>
-        /// <param name="isAvailable">Określa, czy pole ma zostać aktywowane czy dezaktywowane</param>
+        /// <param name="isAvailable">Określa, czy pole ma zostać aktywowane (true) czy dezaktywowane</param>
         public void SetField(int x, int y, bool isAvailable)
         {
             var node = nodes[x][y] = isAvailable ? new Node(x, y) : null;
@@ -208,7 +209,7 @@ namespace HexGameBoard
         ///     Aktywuje/dezaktywuje wszystkie pola z dostarczonej kolekcji i aktualizuje relacje z ich sąsiednimi polami
         /// </summary>
         /// <param name="positions">Pozycje pól (indeksy tablicy) do ustawienia</param>
-        /// <param name="isAvailable"></param>
+        /// <param name="isAvailable">Określa, czy pole ma zostać aktywowane (true) czy dezaktywowane</param>
         public void SetFields(IEnumerable<Vector2Int> positions, bool isAvailable)
         {
             foreach (var position in positions)

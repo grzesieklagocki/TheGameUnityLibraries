@@ -1,7 +1,8 @@
 ﻿using Priority_Queue;
+using System.Collections.Generic;
 using UnityEngine;
 
-namespace HexGameBoard
+namespace HexGameBoard.Nodes
 {
     /// <summary>
     ///     Węzeł ścieżki dla algorytmu A*.
@@ -37,7 +38,7 @@ namespace HexGameBoard
         ///     Lista indeksów pól na które można przejść
         /// </summary>
         internal Node[] neighbors;
-        
+        internal IEnumerable<Vector2Int> neighbors2;
         /// <summary>
         ///     Aktualny stan, w którym jest węzeł w trakcie rozpatrywania przez algorytm A*
         /// </summary>
@@ -67,7 +68,7 @@ namespace HexGameBoard
 
 
         /// <summary>
-        ///     Inicjalizuje nową instację pola
+        ///     Inicjalizuje nową instację węzła
         /// </summary>
         /// <param name="position">Index pola (pozycja w tablicy)</param>
         internal Node(Vector2Int position)
@@ -76,7 +77,7 @@ namespace HexGameBoard
         }
 
         /// <summary>
-        ///     Inicjalizuje nową instację pola
+        ///     Inicjalizuje nową instację węzła
         /// </summary>
         /// <param name="x">Index X pola (pozycja w tablicy)</param>
         /// <param name="y">Index Y pola (pozycja w tablicy)</param>

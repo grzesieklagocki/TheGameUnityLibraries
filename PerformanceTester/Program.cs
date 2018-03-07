@@ -26,6 +26,8 @@ namespace PerformanceTester
             var start = new Vector2Int(0, 0);
             var destination = new Vector2Int(size.x - 1, size.y - 1);
 
+            var fields2 = fields.Select(f => f.Select(f2 => f2.isAvailable).ToArray()).ToArray();
+
             Stack<Vector2Int> path1 = new Stack<Vector2Int>(), path2 = new Stack<Vector2Int>();
 
             //for (int i = 0; i < repeats; i++)
@@ -48,12 +50,20 @@ namespace PerformanceTester
                 else
                     destination.x = size.x - 1;
 
+                //stopwatch1.Start();
+                //Parallel.For(0, repeats, i =>
+                //{
+                //    path1 = HexHelper.FindPath(fields.Select(f => f.Select(f2 => f2.isAvailable).ToArray()).ToArray(), start, destination);
+                //    //System.Diagnostics.Debug.WriteLine(i);
+                //});
+                //stopwatch1.Stop();
 
                 for (int i = 0; i < repeats; i++)
                 {
-                    //stopwatch1.Start();
-                    ////path1 = HexHelper.FindPath(fields, start, destination);
-                    //stopwatch1.Stop();
+                    stopwatch1.Start();
+                    path1 = HexHelper.FindPath(fields.Select(r => r.Select(f => f.isAvailable).ToArray()).ToArray(), start, destination);
+                    //path1 = HexHelper.FindPath(fields2, start, destination);
+                    stopwatch1.Stop();
 
                     stopwatch2.Start();
                     path2 = pathFinder.Find(start, destination);
@@ -61,7 +71,7 @@ namespace PerformanceTester
                     stopwatch2.Stop();
                 }
 
-                Console.WriteLine($"{stopwatch1.ElapsedMilliseconds} ({path1.Count}) / {stopwatch2.ElapsedMilliseconds} ({path2.Count}) [ms]");
+                Console.WriteLine($"static: {stopwatch1.ElapsedMilliseconds} ({path1.Count}) / {stopwatch2.ElapsedMilliseconds} ({path2.Count}) [ms]");
 
                 stopwatch1.Reset();
                 stopwatch2.Reset();
