@@ -27,7 +27,7 @@ namespace HexGameBoard
             int distance = GetDistance(a, b);
             float multiplier = 1.0f / distance;
 
-            for (int i = 1; i < distance - 1; i++)
+            for (int i = 1; i < distance; i++)
                 line.Add(CubeToAxialCoordinates(Round(Vector3.Lerp(aCube, bCube,  i * multiplier))));
 
             line.Add(b);
@@ -51,7 +51,7 @@ namespace HexGameBoard
             int distance = GetDistance(a, b);
             float multiplier = 1.0f / distance;
 
-            for (int i = 0; i < distance; i++)
+            for (int i = 1; i < distance; i++)
             {
                 Vector2Int field = CubeToAxialCoordinates(Round(Vector3.Lerp(aCube, bCube, i * multiplier)));
 
