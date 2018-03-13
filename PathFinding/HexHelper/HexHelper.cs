@@ -33,11 +33,11 @@ namespace HexGameBoard
         ///     Offsety do obliczania indeksu pola sąsiada
         /// </summary>
         //private static readonly Vector2Int[,] offsets;
-        protected static readonly int[][][] offsets = new int[][][]
+        public static readonly int[][][] offsets = new int[][][]
+        {
+            new int[][]
             {
-                new int[][]
-                {
-                    new int[] {  0, -1 },
+                new int[] {  0, -1 },
                     new int[] {  1, -1 },
                     new int[] {  1,  0 },
                     new int[] {  0,  1 },
@@ -52,8 +52,8 @@ namespace HexGameBoard
                     new int[] {  0,  1 },
                     new int[] { -1,  1 },
                     new int[] { -1,  0 },
-                }
-            };
+            }
+        };
 
 
 
@@ -77,7 +77,7 @@ namespace HexGameBoard
         /// <returns></returns>
         public static Vector2Int IndexOfNeighbor(int parentX, int parentY, Direction direction)
         {
-            var indexX = Math.Abs(parentX & 1);
+            int indexX = Math.Abs(parentX & 1);
 
             return new Vector2Int(parentX + offsets[indexX][(int)direction][0], parentY + offsets[indexX][(int)direction][1]);
         }
@@ -114,7 +114,7 @@ namespace HexGameBoard
             //    throw new ArgumentNullException($"Argument {nameof(centerPosition)} is null");
 
 
-            var field = centerPosition;
+            Vector2Int field = centerPosition;
             var fields = new List<Vector2Int>();
 
             if (innerRadius == 0)
@@ -130,14 +130,13 @@ namespace HexGameBoard
 
             return fields;
         }
-
+        
         /// <summary>
         ///     Określa dystans pomiędzy dwoma polami (zdefiniowanymi we współrzędnych kartezjańskich 2D). Ignoruje przeszkody.
         /// </summary>
         /// <param name="a">Pierwsze pole (współrzędne kartezjańskie 2D)</param>
         /// <param name="b">Drugie pole (współrzędne kartezjańskie 2D)</param>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetDistance(Vector2Int a, Vector2Int b)
         {
             return GetDistance(AxialToCubeCoordinates(a), AxialToCubeCoordinates(b));
@@ -164,11 +163,10 @@ namespace HexGameBoard
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3Int AxialToCubeCoordinates(Vector2Int axialCoordinates)
         {
-            var x = axialCoordinates.x;
-            var z = axialCoordinates.y - (axialCoordinates.x - (axialCoordinates.x & 1)) / 2;
-            var y = -x - z;
+            int x = axialCoordinates.x;
+            int z = axialCoordinates.y - (axialCoordinates.x - (axialCoordinates.x & 1)) / 2;
 
-            return new Vector3Int(x, y, z);
+            return new Vector3Int(x, -(x + z), z);
         }
 
         /// <summary>
@@ -194,7 +192,7 @@ namespace HexGameBoard
         {
             var fields = new List<Vector2Int>();
 
-            for (var direction = 0; direction < 6; direction++)
+            for (int direction = 0; direction < 6; direction++)
             {
                 for (int i = 0; i < layer; i++)
                 {

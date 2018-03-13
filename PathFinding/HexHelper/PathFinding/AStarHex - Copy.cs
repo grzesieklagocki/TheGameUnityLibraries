@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-namespace HexGameBoard
+namespace HexGameBoard.PathFinding
 {
-    public abstract partial class HexHelper
+    internal class AStarHex2
     {
         /// <summary>
         ///     Wyszukuje najkrótszą ścieżkę pomiędzy dwoma polami.  
@@ -19,16 +19,9 @@ namespace HexGameBoard
         /// <seealso cref="PathFindableField"/>
         /// <exception cref="ArgumentNullException" />
         /// <returns>Najkrótsza ścieżka (stos)</returns>
-        public static Stack<Vector2Int> FindPath(bool[][] fields, Vector2Int start, Vector2Int destination)
+        internal static Stack<Vector2Int> FindPath(bool[][] fields, Vector2Int start, Vector2Int destination)
         {
-            //return FindPath(fields, start, destination, new Vector2Int(0, 0), new Vector2Int(fields.Length - 1, fields[0].Length - 1));
-            return PathFinding.AStarHex.FindPath(fields, start, destination, new Vector2Int(0, 0), new Vector2Int(fields.Length - 1, fields[0].Length - 1));
-        }
-
-        public static Stack<Vector2Int> FindPath2(bool[][] fields, Vector2Int start, Vector2Int destination)
-        {
-            //return FindPath(fields, start, destination, new Vector2Int(0, 0), new Vector2Int(fields.Length - 1, fields[0].Length - 1));
-            return PathFinding.AStarHex2.FindPath(fields, start, destination, new Vector2Int(0, 0), new Vector2Int(fields.Length - 1, fields[0].Length - 1));
+            return FindPath(fields, start, destination, new Vector2Int(0, 0), new Vector2Int(fields.Length - 1, fields[0].Length - 1));
         }
 
         /// <summary>
@@ -44,34 +37,35 @@ namespace HexGameBoard
         /// <exception cref="ArgumentNullException" />
         /// <exception cref="ArgumentOutOfRangeException" />
         /// <returns>Najkrótsza ścieżka (stos)</returns>
-        public static Stack<Vector2Int> FindPath(bool[][] fields, Vector2Int start, Vector2Int destination, Vector2Int minIndexes, Vector2Int maxIndexes)
+        internal static Stack<Vector2Int> FindPath(bool[][] fields, Vector2Int start, Vector2Int destination, Vector2Int minIndexes, Vector2Int maxIndexes)
         {
-            #if DEBUG
+#if DEBUG
             CheckArguments(fields, start, destination, minIndexes, maxIndexes);
-            #endif
+#endif
 
-            Node[][] nodes = InitializeAstarNodes(fields);
-            var openSet = new FastPriorityQueue<Node>((maxIndexes.x - minIndexes.x) * (maxIndexes.y - minIndexes.y));
-            var startNode = new Node(start);
+            AStarNode[][] nodes = InitializeAstarNodes(fields);
+            Vector2Int[][][] parents = InitializeParents(fields);
+            var openSet = new FastPriorityQueue<AStarPosition>((maxIndexes.x - minIndexes.x) * (maxIndexes.y - minIndexes.y));
+            var startNode = new AStarNode();
 
-            AddToOpenSet(openSet, nodes, startNode);
+            AddToOpenSet(openSet, nodes, startNode, start);
 
             while (openSet.Count > 0)
             {
-                var actualNode = openSet.Dequeue();
+                var actualNodePosition = openSet.Dequeue();
 
                 // znaleziono ścieżkę
-                if (actualNode.position == destination)
-                    return CombinePath(actualNode);
+                if (actualNodePosition.position == destination)
+                    return CombinePath(actualNodePosition.position, start, nodes);
 
-                AddToClosedSet(nodes, actualNode);
+                AddToClosedSet(nodes, actualNodePosition.position);
 
-                foreach (var neighborPosition in GetNeighbors(fields, nodes, actualNode.position, minIndexes, maxIndexes))
+                foreach (var neighborPosition in GetNeighbors(fields, nodes, actualNodePosition.position, minIndexes, maxIndexes))
                 {
                     if (IsInClosedSet(neighborPosition, nodes))
                         continue;
 
-                    var actualG = actualNode.g + 1;
+                    var actualG = nodes[actualNodePosition.position.x][actualNodePosition.position.y].g + 1;
 
                     if (IsInOpenSet(neighborPosition, nodes))
                     {
@@ -79,23 +73,23 @@ namespace HexGameBoard
 
                         if (actualG < neighbor.g)
                         {
-                            neighbor.parent = actualNode;
+                            neighbor.parent = actualNodePosition.position;
                             neighbor.g = actualG;
 
-                            openSet.UpdatePriority(neighbor, neighbor.F);
+                            openSet.UpdatePriority(actualNodePosition, neighbor.F);
                         }
                     }
                     else
                     {
-                        var neighbor = new Node(neighborPosition)
+                        var neighbor = new AStarNode()
                         {
-                            parent = actualNode,
+                            parent = actualNodePosition.position,
                             g = actualG,
                         };
 
-                        neighbor.h = GetDistance(neighbor.position, destination);
+                        neighbor.h = HexHelper.GetDistance(neighborPosition, destination);
 
-                        AddToOpenSet(openSet, nodes, neighbor);
+                        AddToOpenSet(openSet, nodes, neighbor, neighborPosition);
                     }
                 }
             }
@@ -134,14 +128,37 @@ namespace HexGameBoard
         /// <param name="fields">Tablica pól z zadeklarowną dostępnością</param>
         /// <returns>Pomocnicza tablica</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Node[][] InitializeAstarNodes(bool[][] fields)
+        private static AStarNode[][] InitializeAstarNodes(bool[][] fields)
         {
             int sizeX = fields.Length;
             int sizeY = fields[0].Length;
-            var nodes = new Node[sizeX][];
+            var nodes = new AStarNode[sizeX][];
 
             for (int x = 0; x < sizeX; x++)
-                nodes[x] = new Node[sizeY];
+                nodes[x] = new AStarNode[sizeY];
+
+            return nodes;
+        }
+
+        /// <summary>
+        ///     Inicjalizuje tablicę do przechowywania węzłów
+        /// </summary>
+        /// <param name="fields">Tablica pól z zadeklarowną dostępnością</param>
+        /// <returns>Pomocnicza tablica</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Vector2Int[][][] InitializeParents(bool[][] fields)
+        {
+            int sizeX = fields.Length;
+            int sizeY = fields[0].Length;
+            var nodes = new Vector2Int[sizeX][][];
+
+            for (int x = 0; x < sizeX; x++)
+            {
+                nodes[x] = new Vector2Int[sizeY][];
+
+                for (int y = 0; y < sizeY; y++)
+                    nodes[x][y] = new Vector2Int[6];
+            }
 
             return nodes;
         }
@@ -153,9 +170,9 @@ namespace HexGameBoard
         /// <param name="nodes">Tablica węzłów</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsInOpenSet(Vector2Int nodePosition, Node[][] nodes)
+        private static bool IsInOpenSet(Vector2Int nodePosition, AStarNode[][] nodes)
         {
-            return nodes[nodePosition.x][nodePosition.y] != null;
+            return nodes[nodePosition.x][nodePosition.y].state == AStarNode.States.InOpenSet;
             //return nodes[nodePosition.x][nodePosition.y]?.state == Node.States.InOpenSet;
         }
 
@@ -166,9 +183,9 @@ namespace HexGameBoard
         /// <param name="nodes">Tablica węzłów</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsInClosedSet(Vector2Int nodePosition, Node[][] nodes)
+        private static bool IsInClosedSet(Vector2Int nodePosition, AStarNode[][] nodes)
         {
-            return nodes[nodePosition.x][nodePosition.y].state == Node.States.InClosedSet;
+            return nodes[nodePosition.x][nodePosition.y].state == AStarNode.States.InClosedSet;
         }
 
         /// <summary>
@@ -182,10 +199,10 @@ namespace HexGameBoard
         /// <param name="maxIndexes">Maksymalne indeksy pól branych pod uwagę przy wyznaczaniu ścieżki</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static IEnumerable<Vector2Int> GetNeighbors(bool[][] fields, Node[][] nodes, Vector2Int nodePosition, Vector2Int minIndexes, Vector2Int maxIndexes)
+        private static IEnumerable<Vector2Int> GetNeighbors(bool[][] fields, AStarNode[][] nodes, Vector2Int nodePosition, Vector2Int minIndexes, Vector2Int maxIndexes)
         {
-            return nodes[nodePosition.x][nodePosition.y]?.neighbors2
-                    ?? (nodes[nodePosition.x][nodePosition.y].neighbors2 = FindAvailableNeighbors(fields, nodePosition.x, nodePosition.y, minIndexes, maxIndexes));
+            return nodes[nodePosition.x][nodePosition.y].neighbors
+                    ?? (nodes[nodePosition.x][nodePosition.y].neighbors = FindAvailableNeighbors(fields, nodePosition.x, nodePosition.y, minIndexes, maxIndexes));
         }
 
         /// <summary>
@@ -196,11 +213,11 @@ namespace HexGameBoard
         /// <param name="nodes">Tablica węzłów</param>
         /// <param name="node">Wybrany węzeł</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void AddToOpenSet(FastPriorityQueue<Node> openSet, Node[][] nodes, Node node)
+        private static void AddToOpenSet(FastPriorityQueue<AStarPosition> openSet, AStarNode[][] nodes, AStarNode node, Vector2Int position)
         {
-            node.state = Node.States.InOpenSet;
-            openSet.Enqueue(node, node.F);
-            nodes[node.position.x][node.position.y] = node;
+            openSet.Enqueue(new AStarPosition() { position = position }, node.F);
+            node.state = AStarNode.States.InOpenSet;
+            nodes[position.x][position.y] = node;
         }
 
         /// <summary>
@@ -210,9 +227,9 @@ namespace HexGameBoard
         /// <param name="nodes">Tablica węzłów</param>
         /// <param name="node">Wybrany węzeł</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void AddToClosedSet(Node[][] nodes, Node node)
+        private static void AddToClosedSet(AStarNode[][] nodes, Vector2Int position)
         {
-            node.state = Node.States.InClosedSet;
+            nodes[position.x][position.y].state = AStarNode.States.InClosedSet;
         }
 
         /// <summary>
@@ -221,12 +238,14 @@ namespace HexGameBoard
         /// <param name="destination">Węzeł startowy</param>
         /// <returns>Stos</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Stack<Vector2Int> CombinePath(Node destination)
+        private static Stack<Vector2Int> CombinePath(Vector2Int destinationPosition, Vector2Int startPosition, AStarNode[][] nodes)
         {
             var path = new Stack<Vector2Int>(2);
 
-            for (var node = destination; node != null; node = node.parent)
-                path.Push(node.position);
+            for (var node = destinationPosition; node != startPosition; node = new Vector2Int(nodes[node.x][node.y].parent.x, nodes[node.x][node.y].parent.y))
+                path.Push(node);
+
+            path.Push(startPosition);
 
             return path;
         }
@@ -241,18 +260,20 @@ namespace HexGameBoard
         /// <param name="maxIndexes">Maksymalne indeksy pól branych pod uwagę przy wyznaczaniu ścieżki</param>
         /// <returns>Lista dostępnych sąsiadów</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static IEnumerable<Vector2Int> FindAvailableNeighbors(bool[][] fields, int x, int y, Vector2Int minIndexes, Vector2Int maxIndexes)
+        private static Vector2Int[] FindAvailableNeighbors(bool[][] fields, int x, int y, Vector2Int minIndexes, Vector2Int maxIndexes)
         {
-            var neightbors = new List<Vector2Int>(6);
+            var neighbors = new Vector2Int[6];
 
             for (var direction = 0; direction < 6; direction++)
             {
                 var indexX = Math.Abs(x % 2);
-                var neighbor = new Vector2Int(x + offsets[indexX][direction][0], y + offsets[indexX][direction][1]);
+                var neighbor = HexHelper.IndexOfNeighbor(x, y, (HexHelper.Direction)direction);
 
                 if (HasValidIndex(neighbor, minIndexes, maxIndexes) && fields[neighbor.x][neighbor.y])
-                    yield return neighbor;
+                    neighbors[direction] = neighbor;
             }
+
+            return neighbors;
         }
 
         /// <summary>
@@ -272,5 +293,30 @@ namespace HexGameBoard
         }
 
         #endregion
+
+        private struct AStarNode
+        {
+            public enum States
+            {
+                /// <summary>Niesprawdzony</summary>
+                Unexamined,
+                /// <summary>Na liście otwartej</summary>
+                InOpenSet,
+                /// <summary>Na liście zamkniętej</summary>
+                InClosedSet
+            }
+
+            public Vector2Int parent;
+            public Vector2Int[] neighbors;
+            public float h;
+            public float g;
+            public float F { get { return g + h; } }
+            public States state;                       
+        }
+
+        private class AStarPosition : FastPriorityQueueNode
+        {
+            public Vector2Int position;
+        }
     }
 }

@@ -275,5 +275,11 @@ namespace HexGameBoard
         }
 
         #endregion
+
+
+        private struct AStarNode
+        {
+
+        }
     }
 }

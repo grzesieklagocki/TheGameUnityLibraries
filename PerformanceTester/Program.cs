@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,8 +14,12 @@ namespace PerformanceTester
     {
         static void Main(string[] args)
         {
+            const string unityProjectPluginsPath = @"C:\Users\grzes\Dysk Google\Unity Projects\The Game\Assets\Plugins";
+            const string releaseFolder = @"D:\Users\grzes\OneDrive\Dokumenty\visual studio 2017\Projects\PathFinding\PathFinding\bin\Release";
+
             var stopwatch1 = new Stopwatch();
             var stopwatch2 = new Stopwatch();
+            var stopwatch3 = new Stopwatch();
             var size = new Vector2Int(100, 100);
 
             PathFindableField[][] fields = InitializeFields(size);
@@ -28,12 +33,26 @@ namespace PerformanceTester
 
             var fields2 = fields.Select(f => f.Select(f2 => f2.isAvailable).ToArray()).ToArray();
 
-            Stack<Vector2Int> path1 = new Stack<Vector2Int>(), path2 = new Stack<Vector2Int>();
+            Stack<Vector2Int> path1 = new Stack<Vector2Int>(), path2 = new Stack<Vector2Int>(), path3 = new Stack<Vector2Int>();
 
             //for (int i = 0; i < repeats; i++)
             //{
             //    HexHelper.FindPath(fields, start, destination);
             //}
+
+            Console.Write("Wgrać do projektu unity? [y - potwierdzenie]: ");
+            string answer = Console.ReadLine();
+
+            if (answer.Equals("y", StringComparison.CurrentCultureIgnoreCase))
+            {
+                foreach (var file in Directory.GetFiles(releaseFolder))
+                {
+                    if (file.Contains("UnityEngine"))
+                        continue;
+
+                    File.Copy(file, Path.Combine(unityProjectPluginsPath, Path.GetFileName(file)));
+                }
+            }
 
             while (true)
             {
@@ -66,15 +85,28 @@ namespace PerformanceTester
                     stopwatch1.Stop();
 
                     stopwatch2.Start();
-                    path2 = pathFinder.Find(start, destination);
-                    //pathFinder.Find(start, destination);
+                    path2 = HexHelper.FindPath2(fields.Select(r => r.Select(f => f.isAvailable).ToArray()).ToArray(), start, destination);
                     stopwatch2.Stop();
+
+                    stopwatch3.Start();
+                    path3 = pathFinder.Find(start, destination);
+                    stopwatch3.Stop();
                 }
 
-                Console.WriteLine($"static: {stopwatch1.ElapsedMilliseconds} ({path1.Count}) / {stopwatch2.ElapsedMilliseconds} ({path2.Count}) [ms]");
+                Console.WriteLine($"static: {stopwatch1.ElapsedMilliseconds} ({path1.Count}) / static2: {stopwatch2.ElapsedMilliseconds} ({path2.Count}) / {stopwatch3.ElapsedMilliseconds} ({path3.Count}) [ms]");
+
+                stopwatch1.Reset();
+
+                stopwatch1.Restart();
+                for (int i = 0; i < repeats; i++)
+                    fields.Select(r => r.Select(f => f.isAvailable).ToArray()).ToArray();
+                stopwatch1.Stop();
+
+                Console.WriteLine($"Przekształcanie tablicy: {stopwatch1.ElapsedMilliseconds}ms");
 
                 stopwatch1.Reset();
                 stopwatch2.Reset();
+                stopwatch3.Reset();
             }
         }
 

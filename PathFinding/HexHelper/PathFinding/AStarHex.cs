@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-namespace HexGameBoard
+namespace HexGameBoard.PathFinding
 {
-    public abstract partial class HexHelper
+    internal class AStarHex
     {
         /// <summary>
         ///     Wyszukuje najkrótszą ścieżkę pomiędzy dwoma polami.  
@@ -19,16 +19,9 @@ namespace HexGameBoard
         /// <seealso cref="PathFindableField"/>
         /// <exception cref="ArgumentNullException" />
         /// <returns>Najkrótsza ścieżka (stos)</returns>
-        public static Stack<Vector2Int> FindPath(bool[][] fields, Vector2Int start, Vector2Int destination)
+        internal static Stack<Vector2Int> FindPath(bool[][] fields, Vector2Int start, Vector2Int destination)
         {
-            //return FindPath(fields, start, destination, new Vector2Int(0, 0), new Vector2Int(fields.Length - 1, fields[0].Length - 1));
-            return PathFinding.AStarHex.FindPath(fields, start, destination, new Vector2Int(0, 0), new Vector2Int(fields.Length - 1, fields[0].Length - 1));
-        }
-
-        public static Stack<Vector2Int> FindPath2(bool[][] fields, Vector2Int start, Vector2Int destination)
-        {
-            //return FindPath(fields, start, destination, new Vector2Int(0, 0), new Vector2Int(fields.Length - 1, fields[0].Length - 1));
-            return PathFinding.AStarHex2.FindPath(fields, start, destination, new Vector2Int(0, 0), new Vector2Int(fields.Length - 1, fields[0].Length - 1));
+            return FindPath(fields, start, destination, new Vector2Int(0, 0), new Vector2Int(fields.Length - 1, fields[0].Length - 1));
         }
 
         /// <summary>
@@ -44,11 +37,11 @@ namespace HexGameBoard
         /// <exception cref="ArgumentNullException" />
         /// <exception cref="ArgumentOutOfRangeException" />
         /// <returns>Najkrótsza ścieżka (stos)</returns>
-        public static Stack<Vector2Int> FindPath(bool[][] fields, Vector2Int start, Vector2Int destination, Vector2Int minIndexes, Vector2Int maxIndexes)
+        internal static Stack<Vector2Int> FindPath(bool[][] fields, Vector2Int start, Vector2Int destination, Vector2Int minIndexes, Vector2Int maxIndexes)
         {
-            #if DEBUG
+#if DEBUG
             CheckArguments(fields, start, destination, minIndexes, maxIndexes);
-            #endif
+#endif
 
             Node[][] nodes = InitializeAstarNodes(fields);
             var openSet = new FastPriorityQueue<Node>((maxIndexes.x - minIndexes.x) * (maxIndexes.y - minIndexes.y));
@@ -93,7 +86,7 @@ namespace HexGameBoard
                             g = actualG,
                         };
 
-                        neighbor.h = GetDistance(neighbor.position, destination);
+                        neighbor.h = HexHelper.GetDistance(neighbor.position, destination);
 
                         AddToOpenSet(openSet, nodes, neighbor);
                     }
@@ -168,7 +161,7 @@ namespace HexGameBoard
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsInClosedSet(Vector2Int nodePosition, Node[][] nodes)
         {
-            return nodes[nodePosition.x][nodePosition.y].state == Node.States.InClosedSet;
+            return nodes[nodePosition.x][nodePosition.y]?.state == Node.States.InClosedSet;
         }
 
         /// <summary>
@@ -248,7 +241,7 @@ namespace HexGameBoard
             for (var direction = 0; direction < 6; direction++)
             {
                 var indexX = Math.Abs(x % 2);
-                var neighbor = new Vector2Int(x + offsets[indexX][direction][0], y + offsets[indexX][direction][1]);
+                var neighbor = HexHelper.IndexOfNeighbor(x, y, (HexHelper.Direction)direction);
 
                 if (HasValidIndex(neighbor, minIndexes, maxIndexes) && fields[neighbor.x][neighbor.y])
                     yield return neighbor;
@@ -272,5 +265,15 @@ namespace HexGameBoard
         }
 
         #endregion
+
+        private struct AStarNode
+        {
+            public Vector2Int parent;
+            public Vector2Int position;
+            public float h;
+            public float g;
+            public float F { get { return g + h; } }
+            public bool isInClosedSet;                       
+        }
     }
 }
