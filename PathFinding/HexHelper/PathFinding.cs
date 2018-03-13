@@ -25,6 +25,13 @@ namespace HexGameBoard
             return PathFinding.AStarHex.FindPath(fields, start, destination, new Vector2Int(0, 0), new Vector2Int(fields.Length - 1, fields[0].Length - 1));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fields"></param>
+        /// <param name="start"></param>
+        /// <param name="destination"></param>
+        /// <returns></returns>
         public static Stack<Vector2Int> FindPath2(bool[][] fields, Vector2Int start, Vector2Int destination)
         {
             //return FindPath(fields, start, destination, new Vector2Int(0, 0), new Vector2Int(fields.Length - 1, fields[0].Length - 1));
