@@ -279,7 +279,8 @@ namespace HexGameBoard
 
         private struct AStarNode
         {
-
+            int x;
+            int y;
         }
     }
 }
