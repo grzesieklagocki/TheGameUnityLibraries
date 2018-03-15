@@ -281,6 +281,7 @@ namespace HexGameBoard
         {
             int x;
             int y;
+            int z;
         }
     }
 }
