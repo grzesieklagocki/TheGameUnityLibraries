@@ -44,7 +44,7 @@ namespace HexGameBoard.PathFinding
 #endif
 
             AStarNode[][] nodes = InitializeAstarNodes(fields);
-            Vector2Int[][][] parents = InitializeParents(fields);
+            Vector2Int[][][] neighbors = InitializeParents(fields);
             var openSet = new FastPriorityQueue<AStarPosition>((maxIndexes.x - minIndexes.x) * (maxIndexes.y - minIndexes.y));
             var startNode = new AStarNode();
 
@@ -60,8 +60,11 @@ namespace HexGameBoard.PathFinding
 
                 AddToClosedSet(nodes, actualNodePosition.position);
 
-                foreach (var neighborPosition in GetNeighbors(fields, nodes, actualNodePosition.position, minIndexes, maxIndexes))
+                //foreach (var neighborPosition in GetNeighbors(fields, neighbors, nodes, actualNodePosition.position, minIndexes, maxIndexes))
+                var actualNeighbors = GetNeighbors(fields, neighbors, nodes, actualNodePosition.position, minIndexes, maxIndexes);
+                for (int i = 0; i < 6; i++)
                 {
+                    var neighborPosition = actualNeighbors[i];
                     if (IsInClosedSet(neighborPosition, nodes))
                         continue;
 
@@ -81,20 +84,39 @@ namespace HexGameBoard.PathFinding
                     }
                     else
                     {
-                        var neighbor = new AStarNode()
-                        {
-                            parent = actualNodePosition.position,
-                            g = actualG,
-                        };
+                        //var neighbor = new AStarNode()
+                        //{
+                        //    parent = actualNodePosition.position,
+                        //    g = actualG,
+                        //};
 
-                        neighbor.h = HexHelper.GetDistance(neighborPosition, destination);
+                        //neighbor.h = HexHelper.GetDistance(neighborPosition, destination);
 
-                        AddToOpenSet(openSet, nodes, neighbor, neighborPosition);
+                        //AddToOpenSet(openSet, nodes, neighbor, neighborPosition);
+
+                        nodes[neighborPosition.x][neighborPosition.y].parent = actualNodePosition.position;
+                        nodes[neighborPosition.x][neighborPosition.y].g = actualG;
+                        nodes[neighborPosition.x][neighborPosition.y].h = HexHelper.GetDistance(neighborPosition, destination);
+                        nodes[neighborPosition.x][neighborPosition.y].state = AStarNode.States.InOpenSet;
+                        openSet.Enqueue(new AStarPosition(neighborPosition), nodes[neighborPosition.x][neighborPosition.y].F);
+                        //nodes[position.x][position.y] = node;
                     }
                 }
             }
 
             return new Stack<Vector2Int>();
+        }
+
+        private static bool[][] InitializeneighborsExamined(bool[][] fields)
+        {
+            int sizeX = fields.Length;
+            int sizeY = fields[0].Length;
+            var neighbors = new bool[sizeX][];
+
+            for (int i = 0; i < sizeX; i++)
+                neighbors[i] = new bool[sizeY];
+            
+            return neighbors;
         }
 
         #region Helpers
@@ -137,6 +159,11 @@ namespace HexGameBoard.PathFinding
             for (int x = 0; x < sizeX; x++)
                 nodes[x] = new AStarNode[sizeY];
 
+            //System.Threading.Tasks.Parallel.For(0, sizeX, x =>
+            //{
+            //    nodes[x] = new AStarNode[sizeY];
+            //});
+
             return nodes;
         }
 
@@ -155,9 +182,6 @@ namespace HexGameBoard.PathFinding
             for (int x = 0; x < sizeX; x++)
             {
                 nodes[x] = new Vector2Int[sizeY][];
-
-                for (int y = 0; y < sizeY; y++)
-                    nodes[x][y] = new Vector2Int[6];
             }
 
             return nodes;
@@ -193,16 +217,28 @@ namespace HexGameBoard.PathFinding
         ///     Jeśli nie ma jej w tablicy węzłów - znajduje sąsiadów i dodaje listę do tablicy.
         /// </summary>
         /// <param name="fields">Tablica pól z zadeklarowną dostępnością</param>
-        /// <param name="nodes">Tablica węzłów</param>
+        /// <param name="neighbors">Tablica węzłów</param>
         /// <param name="nodePosition">Pozycja wybranego węzła</param>
         /// <param name="minIndexes">Minimalne indeksy pól branych pod uwagę przy wyznaczaniu ścieżki</param>
         /// <param name="maxIndexes">Maksymalne indeksy pól branych pod uwagę przy wyznaczaniu ścieżki</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static IEnumerable<Vector2Int> GetNeighbors(bool[][] fields, AStarNode[][] nodes, Vector2Int nodePosition, Vector2Int minIndexes, Vector2Int maxIndexes)
+        private static Vector2Int[] GetNeighbors(bool[][] fields, Vector2Int[][][] neighbors, AStarNode[][] nodes, Vector2Int nodePosition, Vector2Int minIndexes, Vector2Int maxIndexes)
         {
-            return nodes[nodePosition.x][nodePosition.y].neighbors
-                    ?? (nodes[nodePosition.x][nodePosition.y].neighbors = FindAvailableNeighbors(fields, nodePosition.x, nodePosition.y, minIndexes, maxIndexes));
+            //return examined[nodePosition.x][nodePosition.y] == true
+            //        ?? (nodes[nodePosition.x][nodePosition.y] = FindAvailableNeighbors(fields, nodePosition.x, nodePosition.y, minIndexes, maxIndexes));
+
+            if (nodes[nodePosition.x][nodePosition.y].neighborFinded)
+            {
+                return neighbors[nodePosition.x][nodePosition.y];
+            }
+            else
+            {
+                nodes[nodePosition.x][nodePosition.y].neighborFinded = true;
+                return neighbors[nodePosition.x][nodePosition.y] = FindAvailableNeighbors(fields, nodePosition.x, nodePosition.y, minIndexes, maxIndexes);
+                //SetAvailableNeighbors(fields, ref neighbors, nodePosition, minIndexes, maxIndexes);
+                //return neighbors[nodePosition.x][nodePosition.y];
+            }
         }
 
         /// <summary>
@@ -215,7 +251,7 @@ namespace HexGameBoard.PathFinding
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void AddToOpenSet(FastPriorityQueue<AStarPosition> openSet, AStarNode[][] nodes, AStarNode node, Vector2Int position)
         {
-            openSet.Enqueue(new AStarPosition() { position = position }, node.F);
+            openSet.Enqueue(new AStarPosition(position), node.F);
             node.state = AStarNode.States.InOpenSet;
             nodes[position.x][position.y] = node;
         }
@@ -273,7 +309,30 @@ namespace HexGameBoard.PathFinding
                     neighbors[direction] = neighbor;
             }
 
+            //System.Threading.Tasks.Parallel.For(0, 6, direction =>
+            //{
+            //    var indexX = Math.Abs(x % 2);
+            //    var neighbor = HexHelper.IndexOfNeighbor(x, y, (HexHelper.Direction)direction);
+
+            //    if (HasValidIndex(neighbor, minIndexes, maxIndexes) && fields[neighbor.x][neighbor.y])
+            //        neighbors[direction] = neighbor;
+            //});
+
+
             return neighbors;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void SetAvailableNeighbors(bool[][] fields, ref Vector2Int[][][] neighbors, Vector2Int position, Vector2Int minIndexes, Vector2Int maxIndexes)
+        {
+            for (var direction = 0; direction < 6; direction++)
+            {
+                var indexX = Math.Abs(position.x % 2);
+                var neighbor = HexHelper.IndexOfNeighbor(position.x, position.y, (HexHelper.Direction)direction);
+
+                if (HasValidIndex(neighbor, minIndexes, maxIndexes) && fields[neighbor.x][neighbor.y])
+                    neighbors[position.x][position.y][direction] = neighbor;
+            }
         }
 
         /// <summary>
@@ -307,16 +366,21 @@ namespace HexGameBoard.PathFinding
             }
 
             public Vector2Int parent;
-            public Vector2Int[] neighbors;
             public float h;
             public float g;
             public float F { get { return g + h; } }
-            public States state;                       
+            public States state;
+            public bool neighborFinded;
         }
 
         private class AStarPosition : FastPriorityQueueNode
         {
             public Vector2Int position;
+
+            public AStarPosition(Vector2Int position)
+            {
+                this.position = position;
+            }
         }
     }
 }

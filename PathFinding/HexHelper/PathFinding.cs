@@ -150,6 +150,11 @@ namespace HexGameBoard
             for (int x = 0; x < sizeX; x++)
                 nodes[x] = new Node[sizeY];
 
+            //System.Threading.Tasks.Parallel.For(0, sizeX, x =>
+            //{
+            //    nodes[x] = new Node[sizeY];
+            //});
+
             return nodes;
         }
 
