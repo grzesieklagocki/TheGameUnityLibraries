@@ -265,15 +265,5 @@ namespace HexGameBoard.PathFinding
         }
 
         #endregion
-
-        private struct AStarNode
-        {
-            public Vector2Int parent;
-            public Vector2Int position;
-            public float h;
-            public float g;
-            public float F { get { return g + h; } }
-            public bool isInClosedSet;                       
-        }
     }
 }

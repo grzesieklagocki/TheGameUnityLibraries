@@ -51,8 +51,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HexHelper\NearestFinding.cs" />
-    <Compile Include="HexHelper\PathFinding\AStarHex - Copy.cs" />
+    <Compile Include="HexHelper\PathFinding\AStarHex2.cs" />
     <Compile Include="HexHelper\PathFinding\AStarHex.cs" />
+    <Compile Include="HexHelper\PathFinding\AStarNode.cs" />
+    <Compile Include="HexHelper\PathFinding\AStarPosition.cs" />
     <Compile Include="HexHelper\PixelToCoordinates.cs" />
     <Compile Include="HexHelper\LineDrawing.cs" />
     <Compile Include="Nodes\DijkstraNode.cs" />
