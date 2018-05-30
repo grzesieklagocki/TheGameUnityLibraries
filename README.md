@@ -13,4 +13,4 @@ Features:
 - pathfinding (beta)
 
 Uses https://github.com/BlueRaja/High-Speed-Priority-Queue-for-C-Sharp
-Alghoritms: https://www.redblobgames.com/grids/hexagons/
+Algorithms: https://www.redblobgames.com/grids/hexagons/
